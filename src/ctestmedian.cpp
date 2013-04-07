@@ -51,7 +51,7 @@ using namespace std;
 
 void CTestMedian::Attack(QImage& img, QByteArray& params)
 {
-    int N = *(int *)(params.constData());
+    //int N = *(int *)(params.constData());
     QImage out = img;
     MedFilter(img, out);
     img = out;

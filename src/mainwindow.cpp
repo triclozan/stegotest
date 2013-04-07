@@ -98,8 +98,8 @@ void Thread::parse(QString& data, int depth)
             commands[i].replace("%" + name + "%", value);
         }
 
-        CAlgorithm* alg;
-        CTest* test;
+        CAlgorithm* alg = 0;
+        CTest* test = 0;
         int sep = commands[i].indexOf("->");
         if (sep < 0) {
             continue;
@@ -511,8 +511,8 @@ void MainWindow::restoreInfo()
 void MainWindow::doTest()
 {
     //qDebug() << TestId;
-    int params = 70;
-    CTest::sResults res;
+    //int params = 70;
+    //CTest::sResults res;
     QString tset;
     switch(TestId) {
     case 0:
@@ -526,7 +526,7 @@ void MainWindow::doTest()
                     QByteArray p = QByteArray((char*)&i, sizeof(i));
                     QByteArray p2 = QByteArray((char*)&j, sizeof(i));
                     //test->Test(alg, p, p2, res, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
-                    qDebug() << j << " " << i << " " << res.BER;
+                    //qDebug() << j << " " << i << " " << res.BER;
             }
         }
         break;
@@ -536,7 +536,7 @@ void MainWindow::doTest()
                     QByteArray p = QByteArray((char*)&i, sizeof(i));
                     QByteArray p2 = QByteArray((char*)&j, sizeof(i));
                     //test->Test(alg, p, p2, res, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
-                    qDebug() << j << " " << i << " " << res.BER;
+                    //qDebug() << j << " " << i << " " << res.BER;
             }
         }
         break;
@@ -553,7 +553,7 @@ void MainWindow::doTest()
                 //QByteArray p = QByteArray((char*)&i, sizeof(i));
                 QByteArray p2 = QByteArray((char*)&j, sizeof(i));
                 //test->Test(alg, p, p2, res, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
-                qDebug() << j << " " << i << " " << res.BER;
+                //qDebug() << j << " " << i << " " << res.BER;
             }
         }
         break;
@@ -663,9 +663,9 @@ void MainWindow::changeTest(int index) {
         TestId = index;
         //qDebug() << "AAA";
         delete test;
-        CTestTransform* ttest;
+        //CTestTransform* ttest;
         CTestTransform::sTransform t;
-        CTestTransform::shParams sh;
+        //CTestTransform::shParams sh;
         switch(index) {
         case 0:
             test = new CTestJpeg;
@@ -931,8 +931,8 @@ void MainWindow::parse(QString& data, int depth)
             commands[i].replace("%" + name + "%", value);
         }
 
-        CAlgorithm* alg;
-        CTest* test;
+        CAlgorithm* alg = 0;
+        CTest* test = 0;
         int sep = commands[i].indexOf("->");
         if (sep < 0) {
             continue;
