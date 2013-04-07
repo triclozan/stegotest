@@ -122,6 +122,9 @@ void CTest::Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArr
     result = SERIALIZE(res);
 }
 
+CTest::~CTest() {
+}
+
 void CTest::Visual(CAlgorithm* alg, QString& params, QString& alg_params, const QString& container_name, const QString* watermark_name, int wm_size)
 {
     CParamHelper ph;

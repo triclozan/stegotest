@@ -18,6 +18,9 @@ void CAlgorithm::HideToFile(const QString& container_name, const QString& waterm
     in.save(result_name);
 }
 
+CAlgorithm::~CAlgorithm() {
+}
+
 void CAlgorithm::HideToFile(const QString& container_name, const QString& watermark_name, const QString& result_name)
 {
     HideToFile(container_name, watermark_name, result_name, key);

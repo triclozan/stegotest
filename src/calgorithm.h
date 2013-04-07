@@ -32,6 +32,7 @@ public:
     void RestoreFromFile(const QString& container_name, const QString& watermark_name);
     QByteArray bitToByte(QBitArray bits);
     QBitArray byteToBit(QByteArray bytes);
+    virtual ~CAlgorithm();
 protected:
     QByteArray key;  
     QString params;

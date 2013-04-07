@@ -26,6 +26,7 @@ public:
     void AdMedFilter(QImage& in, QImage& out, int N = 1);
     void SetParams(QString params);
     void Sharpen(QImage& in, QImage& out, double strength = 0.1);
+    virtual ~CTest();
 private:
     QString params;
     int size, tsize, num;
