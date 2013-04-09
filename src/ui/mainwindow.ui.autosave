@@ -90,7 +90,7 @@ p, li { white-space: pre-wrap; }
               <item>
                <widget class="QPushButton" name="startButton">
                 <property name="text">
-                 <string>ЗАП</string>
+                 <string>ЗАПУСК</string>
                 </property>
                </widget>
               </item>

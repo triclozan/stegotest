@@ -77,6 +77,8 @@ HEADERS  += \
     src/RNG/stocc.h \
     src/RNG/randomc.h
 
+INCLUDEPATH += $$PWD/../builds/stego
+
 FORMS    += src/ui/mainwindow.ui
 
 RC_FILE += resources/res.rc
