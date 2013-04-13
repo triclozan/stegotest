@@ -160,6 +160,9 @@ p, li { white-space: pre-wrap; }
                 <property name="text">
                  <string>Картинка</string>
                 </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
              </layout>
@@ -1060,22 +1063,6 @@ border: 2px solid;</string>
     <hint type="destinationlabel">
      <x>1105</x>
      <y>300</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_11</sender>
-   <signal>released()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>hidePicture()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1051</x>
-     <y>329</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1106</x>
-     <y>261</y>
     </hint>
    </hints>
   </connection>

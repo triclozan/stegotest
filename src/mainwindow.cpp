@@ -364,6 +364,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::showPicture()
 {
+    if (ui->pushButton_11->isChecked()) {
+        lab->hide();
+        return;
+    }
     if (!test_image_loaded) {
         return;
     }
@@ -375,13 +379,14 @@ void MainWindow::showPicture()
     lab->show();
     //lab->lower();
     ui->pushButton_11->setDown(true);
-    update();
+    //update();
     this->setFocus();
+    ui->pushButton_11->setChecked(true);
 }
 
 void MainWindow::hidePicture()
 {
-    lab->hide();
+    //lab->hide();
 }
 
 void MainWindow::showContextMenu(const QPoint &pt)
@@ -471,6 +476,10 @@ MainWindow::~MainWindow()
     delete ui;
     delete menu_input;
     delete menu_output;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    lab->hide();
 }
 
 void MainWindow::hideInfo()

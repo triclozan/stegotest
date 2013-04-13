@@ -85,6 +85,8 @@ public slots:
 
     void showPicture();
     void hidePicture();
+protected:
+    void closeEvent(QCloseEvent *event);
 private:
     void parse(QString& data, int depth=0);
     Ui::MainWindow *ui;
