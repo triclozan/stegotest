@@ -90,7 +90,7 @@ p, li { white-space: pre-wrap; }
               <item>
                <widget class="QPushButton" name="startButton">
                 <property name="text">
-                 <string>ЗАП</string>
+                 <string>ЗАПУСК</string>
                 </property>
                </widget>
               </item>
@@ -129,6 +129,31 @@ p, li { white-space: pre-wrap; }
                  </size>
                 </property>
                </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_12">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>23</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>0</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QPushButton" name="pushButton_11">
@@ -997,7 +1022,7 @@ border: 2px solid;</string>
    <slot>perform_tests()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>496</x>
+     <x>485</x>
      <y>344</y>
     </hint>
     <hint type="destinationlabel">
@@ -1013,7 +1038,7 @@ border: 2px solid;</string>
    <slot>afterTest()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>611</x>
+     <x>600</x>
      <y>344</y>
     </hint>
     <hint type="destinationlabel">
@@ -1024,17 +1049,49 @@ border: 2px solid;</string>
   </connection>
   <connection>
    <sender>pushButton_11</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showPicture()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1044</x>
+     <y>333</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1105</x>
+     <y>300</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_11</sender>
+   <signal>released()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>hidePicture()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1051</x>
+     <y>329</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1106</x>
+     <y>261</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_12</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>changeContainer()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1086</x>
-     <y>344</y>
+     <x>1004</x>
+     <y>332</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1108</x>
-     <y>379</y>
+     <x>1104</x>
+     <y>233</y>
     </hint>
    </hints>
   </connection>

@@ -364,6 +364,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::showPicture()
 {
+    if (!test_image_loaded) {
+        return;
+    }
     QPixmap p = QPixmap(container).scaled(QSize(256,256), Qt::KeepAspectRatio);
     lab->setPixmap(p);
     lab->setGeometry(this->geometry().x(), this->geometry().y(), 256, 256);
