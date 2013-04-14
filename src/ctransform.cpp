@@ -116,7 +116,10 @@ void CTransform::performTransform(QImage& in, QString& params)
                 Wavelet(*src, *dst, options[1].toInt());
                 break;
             case tWiener:
-                if (options.size() > 1) {
+                if (options.size() > 2) {
+                    Wiener(*src, *dst, options[1].toInt(), options[2].toInt());
+                }
+                else if (options.size() > 1) {
                     Wiener(*src, *dst, options[1].toInt());
                 }
                 else {
@@ -966,14 +969,14 @@ void CTransform::addFINoise(QImage& in, QImage& out, int num, double value, int 
     fftw_free(in_);
 }
 
-void CTransform::Wiener(QImage& in, QImage& out, int N)
+void CTransform::Wiener(QImage& in, QImage& out, int N, int stage)
 {
     int ch = 3;
     double y, r;
     int cb, cr;
 
-    /*AMFilter(in, out, 2);
-    in = out;*/
+    qDebug() << "OOO" << stage;
+
     fftw_complex* in_ = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * in.height()*in.width());
     //qDebug() << "FFT";
     for (int i=0; i<in.width(); i++) {
@@ -1003,12 +1006,9 @@ void CTransform::Wiener(QImage& in, QImage& out, int N)
     p = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_execute(p);
 
-    for (int i=0; i<in.width(); i++) {
-        for (int j=0; j<in.height(); j++) {
-            double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
-            double k = (exp(-0.5*pow(D/70, 2)));
-            MULC2R(in_[i*in.height()+j], k);
-        }
+    if (stage == 0) {
+        spectrum(out, in_);
+        return;
     }
 
     for (int i=0; i<in.width(); i++) {
@@ -1019,9 +1019,19 @@ void CTransform::Wiener(QImage& in, QImage& out, int N)
         }
     }
 
+    /*for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
+            double k = (exp(-0.5*pow(D/70, 2)));
+            MULC2R(in_[i*in.height()+j], k);
+        }
+    }*/
 
-    /*spectrum(out, in_);
-            return;*/
+    if (stage == 1) {
+        spectrum(out, in_);
+        return;
+    }
+
     p2 = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_BACKWARD, FFTW_ESTIMATE);
     fftw_execute(p2);
 
@@ -1061,6 +1071,10 @@ void CTransform::Wiener(QImage& in, QImage& out, int N)
         }
     }
 
+    if (stage == 2) {
+        return;
+    }
+
     for (int i=0; i<in.width(); i++) {
         for (int j=0; j<in.height(); j++) {
             switch(ch) {
@@ -1086,15 +1100,26 @@ void CTransform::Wiener(QImage& in, QImage& out, int N)
     }
 
     fftw_execute(p);
+
+    if (stage == 3) {
+        spectrum(out, in_);
+        return;
+    }
+
     if (N > 0) {
         for (int i=0; i<in.width(); i++) {
             for (int j=0; j<in.height(); j++) {
                 double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
-                double h = 1 / (1 + pow(D / N, 20));
+                double h = 1;// / (1 + pow(D / N, 20));
                 double k = 1 / (exp(-0.5*pow(D/70, 2)));
-                MULC2R(in_[i*in.height()+j], k*h);
+                MULC2R(in_[i*in.height()+j], k*h*0.1);
             }
         }
+    }
+
+    if (stage == 4) {
+        spectrum(out, in_);
+        return;
     }
 
     /*if (N > 0) {
@@ -1113,6 +1138,12 @@ void CTransform::Wiener(QImage& in, QImage& out, int N)
 
     /*spectrum(out, in_);
             return;*/
+
+    if (stage == 4) {
+        spectrum(out, in_);
+        return;
+    }
+
     p2 = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_BACKWARD, FFTW_ESTIMATE);
     fftw_execute(p2);
 

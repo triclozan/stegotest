@@ -83,6 +83,9 @@ void CParamHelper::Process(void* ptr, int type, QString value)
         if (value == "JPEG") {
             *(int*)(ptr) = tJpeg;
         }
+        else if (value == "WIENER") {
+            *(int*)(ptr) = tWiener;
+        }
         else if (value == "WAVELET_NOISE") {
             *(int*)(ptr) = tWavelet;
         }

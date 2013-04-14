@@ -44,7 +44,8 @@ SOURCES += \
     src/RNG/stoc1.cpp \
     src/RNG/mersenne.cpp \
     src/RNG/fnchyppr.cpp \
-    src/RNG/erfres.cpp
+    src/RNG/erfres.cpp \
+    src/ECC/rsccode.cpp
 
 HEADERS  += \
     src/mainwindow.h \
@@ -75,7 +76,8 @@ HEADERS  += \
     src/FFT/wavelet2d.h \
     src/FFT/fftw3.h \
     src/RNG/stocc.h \
-    src/RNG/randomc.h
+    src/RNG/randomc.h \
+    src/ECC/rsccode.h
 
 INCLUDEPATH += $$PWD/../builds/stego
 

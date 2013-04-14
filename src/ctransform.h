@@ -28,7 +28,7 @@ public:
     void Wavelet(QImage& in, QImage& out, int level);
     void HistEq(QImage& in, QImage& out);
     void AdLocalFilter(QImage& in, QImage& out, double d, int N = 1);
-    void Wiener(QImage& in, QImage& out, int N = 70);
+    void Wiener(QImage& in, QImage& out, int N = 70, int stage = 10);
 };
 
 #endif // CTRANSFORM_H
