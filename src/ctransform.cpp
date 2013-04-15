@@ -116,7 +116,10 @@ void CTransform::performTransform(QImage& in, QString& params)
                 Wavelet(*src, *dst, options[1].toInt());
                 break;
             case tWiener:
-                if (options.size() > 2) {
+                if (options.size() > 3) {
+                    Wiener(*src, *dst, options[1].toInt(), options[2].toInt(), options[3].toInt());
+                }
+                else if (options.size() > 2) {
                     Wiener(*src, *dst, options[1].toInt(), options[2].toInt());
                 }
                 else if (options.size() > 1) {
@@ -969,7 +972,7 @@ void CTransform::addFINoise(QImage& in, QImage& out, int num, double value, int 
     fftw_free(in_);
 }
 
-void CTransform::Wiener(QImage& in, QImage& out, int N, int stage)
+void CTransform::Wiener(QImage& in, QImage& out, int N, int radius, int stage)
 {
     int ch = 3;
     double y, r;
@@ -1019,6 +1022,11 @@ void CTransform::Wiener(QImage& in, QImage& out, int N, int stage)
         }
     }
 
+    if (stage == 7) {
+        spectrum(out, in_);
+        return;
+    }
+
     /*for (int i=0; i<in.width(); i++) {
         for (int j=0; j<in.height(); j++) {
             double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
@@ -1048,6 +1056,7 @@ void CTransform::Wiener(QImage& in, QImage& out, int N, int stage)
             }
         }
     }
+
 
     for (int i=0; i<in.width(); i++) {
         for (int j=0; j<in.height(); j++) {
@@ -1110,16 +1119,13 @@ void CTransform::Wiener(QImage& in, QImage& out, int N, int stage)
         for (int i=0; i<in.width(); i++) {
             for (int j=0; j<in.height(); j++) {
                 double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
-                double h = 1;// / (1 + pow(D / N, 20));
-                double k = 1 / (exp(-0.5*pow(D/70, 2)));
-                MULC2R(in_[i*in.height()+j], k*h*0.1);
+                if (D < radius) {
+                    double k = 1 / (exp(-0.5*pow(D/70, 2)));
+                    double h = 1 / (1 +k*k/N);
+                    MULC2R(in_[i*in.height()+j], h*k);
+                }
             }
         }
-    }
-
-    if (stage == 4) {
-        spectrum(out, in_);
-        return;
     }
 
     /*if (N > 0) {
@@ -1134,7 +1140,10 @@ void CTransform::Wiener(QImage& in, QImage& out, int N, int stage)
         }
     }*/
 
-
+    if (stage == 4) {
+        spectrum(out, in_);
+        return;
+    }
 
     /*spectrum(out, in_);
             return;*/
@@ -1161,9 +1170,238 @@ void CTransform::Wiener(QImage& in, QImage& out, int N, int stage)
         }
     }
 
+    qDebug() << min / (in.height()*in.width()) << "_" << max / (in.height()*in.width());
+
     for (int i=0; i<in.width(); i++) {
         for (int j=0; j<in.height(); j++) {
-            double val = (fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());//(fabs(in_[i*in.height()+j][0])-min) / (max-min) * 255;//(fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());
+            double val = (fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());//((fabs(in_[i*in.height()+j][0])) - min) * (255.0 / (max-min));//(fabs(in_[i*in.height()+j][0])-min) / (max-min) * 255;//(fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());
+            int intval = PIXELRANGE(ROUND(val));
+            switch(ch) {
+            case channels::BLUE:
+                out.setPixel(i, j, PIXEL(RED(in.pixel(i, j)), GREEN(in.pixel(i, j)), intval));
+                break;
+            case channels::RED:
+                out.setPixel(i, j, PIXEL(intval, GREEN(in.pixel(i, j)), BLUE(in.pixel(i, j))));
+                break;
+            case channels::GREEN:
+                out.setPixel(i, j, PIXEL(RED(in.pixel(i, j)), intval, BLUE(in.pixel(i, j))));
+                break;
+            case channels::Y:
+                RGBtoYCbCr(in.pixel(i, j), y, cr, cb);
+                out.setPixel(i, j, YCbCrtoRGB(val, cr, cb));
+                break;
+            }
+        }
+    }
+
+    fftw_destroy_plan(p);
+    fftw_destroy_plan(p2);
+    fftw_free(in_);
+}
+
+void CTransform::WienerGauss(QImage& in, QImage& out, int N, int radius, int stage)
+{
+    int ch = 3;
+    double y, r;
+    int cb, cr;
+
+    qDebug() << "OOO" << stage;
+
+    fftw_complex* in_ = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * in.height()*in.width());
+    //qDebug() << "FFT";
+    for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            switch(ch) {
+            case channels::BLUE:
+                r = BLUE(in.pixel(i, j));
+                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
+                break;
+            case channels::RED:
+                r = RED(in.pixel(i, j));
+                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
+                break;
+            case channels::GREEN:
+                r = GREEN(in.pixel(i, j));
+                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
+                break;
+            case channels::Y:
+                RGBtoYCbCr(in.pixel(i, j), y, cr, cb);
+                in_[i*in.height()+j][0] = ((i+j)%2)?y:-y;
+                break;
+            }
+            in_[i*in.height()+j][1] = 0.0;
+        }
+    }
+    fftw_plan p, p2;
+    p = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_execute(p);
+
+    if (stage == 0) {
+        spectrum(out, in_);
+        return;
+    }
+
+    for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
+            double k = (exp(-0.5*pow(D/70, 2)));
+            MULC2R(in_[i*in.height()+j], k);
+        }
+    }
+
+    if (stage == 7) {
+        spectrum(out, in_);
+        return;
+    }
+
+    /*for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
+            double k = (exp(-0.5*pow(D/70, 2)));
+            MULC2R(in_[i*in.height()+j], k);
+        }
+    }*/
+
+    if (stage == 1) {
+        spectrum(out, in_);
+        return;
+    }
+
+    p2 = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_BACKWARD, FFTW_ESTIMATE);
+    fftw_execute(p2);
+
+    double max = 0;
+    double min = fabs(in_[0][0]);
+    for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            double v = fabs(in_[i*in.height()+j][0]);
+            if (v > max) {
+                max = v;
+            }
+            if (v < min) {
+                min = v;
+            }
+        }
+    }
+
+
+    for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            double val = (fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());
+            int intval = PIXELRANGE(ROUND(val));
+            switch(ch) {
+            case channels::BLUE:
+                out.setPixel(i, j, PIXEL(RED(in.pixel(i, j)), GREEN(in.pixel(i, j)), intval));
+                break;
+            case channels::RED:
+                out.setPixel(i, j, PIXEL(intval, GREEN(in.pixel(i, j)), BLUE(in.pixel(i, j))));
+                break;
+            case channels::GREEN:
+                out.setPixel(i, j, PIXEL(RED(in.pixel(i, j)), intval, BLUE(in.pixel(i, j))));
+                break;
+            case channels::Y:
+                RGBtoYCbCr(in.pixel(i, j), y, cr, cb);
+                out.setPixel(i, j, YCbCrtoRGB(val, cr, cb));
+                break;
+            }
+        }
+    }
+
+    if (stage == 2) {
+        return;
+    }
+
+    for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            switch(ch) {
+            case channels::BLUE:
+                r = BLUE(out.pixel(i, j));
+                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
+                break;
+            case channels::RED:
+                r = RED(out.pixel(i, j));
+                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
+                break;
+            case channels::GREEN:
+                r = GREEN(out.pixel(i, j));
+                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
+                break;
+            case channels::Y:
+                RGBtoYCbCr(out.pixel(i, j), y, cr, cb);
+                in_[i*in.height()+j][0] = ((i+j)%2)?y:-y;
+                break;
+            }
+            in_[i*in.height()+j][1] = 0.0;
+        }
+    }
+
+    fftw_execute(p);
+
+    if (stage == 3) {
+        spectrum(out, in_);
+        return;
+    }
+
+    if (N > 0) {
+        for (int i=0; i<in.width(); i++) {
+            for (int j=0; j<in.height(); j++) {
+                double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
+                if (D < radius) {
+                    double k = 1 / (exp(-0.5*pow(D/70, 2)));
+                    double h = 1 / (1 +k*k/N);
+                    MULC2R(in_[i*in.height()+j], h*k);
+                }
+            }
+        }
+    }
+
+    /*if (N > 0) {
+        for (int i=0; i<in.width(); i++) {
+            for (int j=0; j<in.height(); j++) {
+                double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
+                double k = 1 / (exp(-0.5*pow(D/70, 2)));
+                double k2 = exp(-0.5*pow(D/70, 2));
+                k2 = k2*k2;
+                MULC2R(in_[i*in.height()+j], k * k2 / (k2 + N));
+            }
+        }
+    }*/
+
+    if (stage == 4) {
+        spectrum(out, in_);
+        return;
+    }
+
+    /*spectrum(out, in_);
+            return;*/
+
+    if (stage == 4) {
+        spectrum(out, in_);
+        return;
+    }
+
+    p2 = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_BACKWARD, FFTW_ESTIMATE);
+    fftw_execute(p2);
+
+    max = 0;
+    min = fabs(in_[0][0]);
+    for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            double v = fabs(in_[i*in.height()+j][0]);
+            if (v > max) {
+                max = v;
+            }
+            if (v < min) {
+                min = v;
+            }
+        }
+    }
+
+    qDebug() << min / (in.height()*in.width()) << "_" << max / (in.height()*in.width());
+
+    for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            double val = (fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());//((fabs(in_[i*in.height()+j][0])) - min) * (255.0 / (max-min));//(fabs(in_[i*in.height()+j][0])-min) / (max-min) * 255;//(fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());
             int intval = PIXELRANGE(ROUND(val));
             switch(ch) {
             case channels::BLUE:

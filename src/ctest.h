@@ -29,7 +29,7 @@ public:
     virtual ~CTest();
 private:
     QString params;
-    int size, tsize, num;
+    int size, tsize, num, block, parity;
 };
 
 #endif // CTEST_H

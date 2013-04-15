@@ -7,6 +7,7 @@
 #include <math.h>
 #include "cparamhelper.h"
 #include "util.h"
+#include "ECC/rsccode.h"
 
 void CTest::Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArray& result, const QString& container_name, const QString& watermark_name)
 {
@@ -36,9 +37,113 @@ void CTest::Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArr
     srand(QTime::currentTime().msec());
     int count = 0;
     int bcount = 0;
-    tsize = size = 0;
+    tsize = size = block = parity = 0;
     num = 2;
     CTest::SetParams(params);
+
+    if(block && parity) {
+        int encoded_len = ((size + block - 1) / block) * (block + parity);
+        SetParams(params);
+        QByteArray tmp_bytes;
+        QByteArray tmp_bytes_out;
+        bytes.resize(size);
+        tmp_bytes.resize(encoded_len);
+        tmp_bytes_out.resize(encoded_len);
+        bytes_out.resize(size);
+        RscCode r(parity);
+        r.setBlockSize(block);
+        r.initialize_ecc();
+        for (int i=0; i<num; i++) {
+            for (int i=0; i<size; i++) {
+                bytes[i] = rand() % 256;// - bytes[i];
+            }
+            QBitArray tmpbits = alg->byteToBit(bytes);
+            QBitArray tmpbits3(8*size);
+            QBitArray tmpbits4(8*encoded_len);
+            QByteArray b(8*size, 0);
+            for (int i=0; i<tmpbits.size(); i++) {
+                b[i] = tmpbits[i] ? 0 : 255;
+            }
+            QByteArray b2(8*encoded_len, 0);
+            r.encode((unsigned char*)b.data(), size*8, (unsigned char*)b2.data());
+            QBitArray tmpbits2(8*encoded_len);
+            for (int i=0; i<b2.size(); i++) {
+                tmpbits2[i] = (b2[i] == 255);
+            }
+            tmp_bytes = alg->bitToByte(tmpbits2);
+            alg->SetParams(alg_params);
+            //qDebug() << alg_params;
+            alg->GenKey(tmp_bytes);
+            alg->Hide(in, tmp_bytes);
+            Attack(in, params);
+            alg->Restore(in, tmp_bytes_out);
+
+            tmpbits4 = alg->byteToBit(tmp_bytes_out);
+            for (int i=0; i<tmpbits4.size(); i++) {
+                b2[i] = tmpbits4[i] ? 0 : 255;
+            }
+
+            //in.save("F:\\1.jpg");
+            int pos = 0;
+            r.decode((unsigned char*)b2.data(), size*8, (unsigned char*)b.data());
+            for (int i=0; i<b.size(); i++) {
+                tmpbits3[i] = (b[i] == 255);
+            }
+            bytes_out = alg->bitToByte(tmpbits3);
+
+            for (int i=0; i< bytes.size(); i++) {
+                if (bytes[i] == bytes_out[i]) {
+                    bcount++;
+                }
+                if (bytes_out[i] == 255) {
+                    pos++;
+                }
+            }
+            //qDebug() << pos;
+            bits = alg->byteToBit(bytes);
+            tmp_bits_out = alg->byteToBit(bytes_out);
+
+            bits_out.resize(size*8);
+
+            for (int i=0; i<size*8; i++) {
+                int v = 0;
+                if (tmp_bits_out[i]) {
+                    v++;
+                    pos++;
+                }
+                else {
+                    v--;
+                }
+                if (v > 0) {
+                    bits_out[i] = true;
+
+                }
+                else {
+                    bits_out[i] = false;
+                }
+            }
+            //qDebug() << bytes_out.size();
+            //qDebug() << bytes.size();
+
+            for (int i=0; i< bits_out.size(); i++) {
+                if (bits[i] == bits_out[i]) {
+                    count++;
+                }
+            }
+            /*for (int i=0; i<tsize; i++) {
+                bytes[i] = 255 ^ bytes[i];// - bytes[i];
+            }*/
+
+            in = orig;
+            //qDebug() << "WWW";
+        }
+        sResults res;
+        res.ByER = ((double)count) / bytes.size() / num;
+        res.BER = ((double)count) / (size*8) / num;
+        result = SERIALIZE(res);
+        return;
+    }
+
     if (!size) {
         size = (in.width() / 8) * (in.height() / 8) / 8;
     }
@@ -165,6 +270,8 @@ void CTest::SetParams(QString params)
     CParamHelper ph;
     ph.AddToMap(&size, ph.INT, "size");
     ph.AddToMap(&tsize, ph.INT, "tsize");
+    ph.AddToMap(&block, ph.INT, "block");
+    ph.AddToMap(&parity, ph.INT, "parity");
     ph.AddToMap(&num, ph.INT, "num");
     ph.SetParams(params);
 }
