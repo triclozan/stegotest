@@ -1,5 +1,6 @@
 #include "rsccode.h"
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 
 RscCode::RscCode(int p) {
@@ -98,7 +99,7 @@ void RscCode::build_codeword (unsigned char msg[], int nbytes, unsigned char dst
   }
 }
 
-void RscCode::decode_data(unsigned char data[], int nbytes)
+void RscCode::decode_block(unsigned char data[], int nbytes)
 {
   int i, j, sum;
   for (int i=0; i<MAXDEG; i++) {
@@ -153,7 +154,7 @@ void RscCode::compute_genpoly (int nbytes, int genpoly[])
   }
 }
 
-void RscCode::encode_data (unsigned char msg[], int nbytes, unsigned char dst[])
+void RscCode::encode_block (unsigned char msg[], int nbytes, unsigned char dst[])
 {
   int i, LFSR[NPAR+1],dbyte, j;
 
@@ -477,3 +478,27 @@ BIT16 RscCode::crchware(BIT16 data, BIT16 genpoly, BIT16 accum)
     }
     return (accum);
 }
+
+//-----------------------------------------------------------
+void RscCode::encode(unsigned char msg[], int nbytes, unsigned char dst[])
+{
+    int k = 0;
+    for (int i=0; i<nbytes; i+=blockSize) {
+        encode_block(msg + i, blockSize, dst + (i + k*NPAR));
+        k++;
+    }
+}
+//------------------------------------------------------------
+void RscCode::decode(unsigned char codeword[], int nbytes, unsigned char res[])
+{
+    int k = 0;
+    for (int i=0; i<nbytes; i+=blockSize) {
+        decode_block(codeword + (i + k*NPAR), blockSize + NPAR);
+        if (check_syndrome () != 0) {
+            correct_errors_erasures (codeword + (i + k*NPAR), blockSize + NPAR, 0, 0);
+        }
+        memcpy(res + i, codeword + (i + k*NPAR), (nbytes-i <= blockSize) ? blockSize : nbytes - i);
+        k++;
+    }
+}
+

@@ -22,12 +22,13 @@ public:
     void print_parity (void);
     void print_syndrome (void);
     void build_codeword (unsigned char msg[], int nbytes, unsigned char dst[]);
-    void decode_data(unsigned char data[], int nbytes);
+    void decode_block(unsigned char data[], int nbytes);
+    void decode(unsigned char codeword[], int nbytes, unsigned char res[]);
     int check_syndrome (void);
     void debug_check_syndrome (void);
     void compute_genpoly (int nbytes, int genpoly[]);
-    void encode_data (unsigned char msg[], int nbytes, unsigned char dst[]);
-
+    void encode (unsigned char msg[], int nbytes, unsigned char dst[]);
+    void encode_block (unsigned char msg[], int nbytes, unsigned char dst[]);
     void Modified_Berlekamp_Massey();
     void compute_modified_omega ();
     void mult_polys (int dst[], int p1[], int p2[]);
