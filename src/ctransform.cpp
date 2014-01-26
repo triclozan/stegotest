@@ -87,6 +87,10 @@ void CTransform::performTransform(QImage& in, QString& params)
                 N = options[1].toInt();
                 AMFilter(*src, *dst, N);
                 break;
+            case tGBlur:
+                d = options[1].toDouble();
+                GaussBlur(*src, *dst, d);
+                break;
             case tBLFilter:
                 if (options.size() > 3) {
                     BLFilter(*src, *dst, options[1].toDouble(), options[2].toDouble(), options[3].toInt());
@@ -116,11 +120,14 @@ void CTransform::performTransform(QImage& in, QString& params)
                 Wavelet(*src, *dst, options[1].toInt());
                 break;
             case tWiener:
+                if (options.size() > 4) {
+                    Wiener(*src, *dst, options[1].toInt(), options[2].toDouble(), options[3].toInt(), options[3].toInt());
+                }
                 if (options.size() > 3) {
-                    Wiener(*src, *dst, options[1].toInt(), options[2].toInt(), options[3].toInt());
+                    Wiener(*src, *dst, options[1].toInt(), options[2].toDouble(), options[3].toInt());
                 }
                 else if (options.size() > 2) {
-                    Wiener(*src, *dst, options[1].toInt(), options[2].toInt());
+                    Wiener(*src, *dst, options[1].toInt(), options[2].toDouble());
                 }
                 else if (options.size() > 1) {
                     Wiener(*src, *dst, options[1].toInt());
@@ -136,14 +143,24 @@ void CTransform::performTransform(QImage& in, QString& params)
                 break;
             case tMedFilter:
                 N = options[1].toInt();
-                MedFilter(*src, *dst, N);
+                if (options.size() > 2) {
+                    delta = options[2].toInt();
+                    MedFilter(*src, *dst, N, delta);
+                }
+                else {
+                    MedFilter(*src, *dst, N);
+                }
                 break;
             case tHisteq:
                 HistEq(*src, *dst);
                 break;
             case tAdMedFilter:
                 N = options[1].toInt();
-                if (options.size() > 2) {
+                if (options.size() > 3) {
+                    delta = options[2].toInt();
+                    AdMedFilter(*src, *dst, N, delta, options[3].toInt());
+                }
+                else if (options.size() > 2) {
                     delta = options[2].toInt();
                     AdMedFilter(*src, *dst, N, delta);
                 }
@@ -472,8 +489,7 @@ void CTransform::HMFilter(QImage& in, QImage& out, int N)
     }
 }
 
-void CTransform::MedFilter(QImage& in, QImage& out, int N)
-{
+/*
     int W = 2*N + 1;
     srand(QTime::currentTime().msec());
     int *ar = new int[W*W];
@@ -483,84 +499,15 @@ void CTransform::MedFilter(QImage& in, QImage& out, int N)
         for (int j=0; j<in.height(); j++) {
             int count = 0;
             int r = 0, g = 0, b = 0;
-            for (int k=-N; k<=N; k++) {
-                for (int l=-N; l<=N; l++) {
-                    if (k + i < 0 || k + i >= in.width() || l+j < 0 || l + j >= in.height()) {
-                        continue;
-                    }
-                    ar[count] = RED(in.pixel(i+k, j+l));
-                    ag[count] = GREEN(in.pixel(i+k, j+l));
-                    ab[count] = BLUE(in.pixel(i+k, j+l));
-                    count++;
-                }
-            }
-            qsort(ar, count, sizeof(int), compare_int_val);
-            qsort(ag, count, sizeof(int), compare_int_val);
-            qsort(ab, count, sizeof(int), compare_int_val);
-            if (count % 2) {
-                r = PIXELRANGE(ROUND(ar[count / 2]));
-                g = PIXELRANGE(ROUND(ag[count / 2]));
-                b = PIXELRANGE(ROUND(ab[count / 2]));
-            }
-            else {
-                r = PIXELRANGE(ROUND( (ar[count / 2] + ar[count / 2 - 1]) / 2 ));
-                g = PIXELRANGE(ROUND( (ag[count / 2] + ag[count / 2 - 1]) / 2 ));
-                b = PIXELRANGE(ROUND( (ab[count / 2] + ab[count / 2 - 1]) / 2 ));
-            }
-            out.setPixel(i, j, PIXEL(PIXELRANGE(ROUND(r)), PIXELRANGE(ROUND(g)), PIXELRANGE(ROUND(b))));
-        }
-    }
-    delete [] ar;
-    delete [] ag;
-    delete [] ab;
-}
-
-void CTransform::AdMedFilter(QImage& in, QImage& out, int N, int delta)
-{
-    int W = 2*(N+2) + 1;
-    srand(QTime::currentTime().msec());
-    int *ar = new int[W*W];
-    int *ag = new int[W*W];
-    int *ab = new int[W*W];
-    int ttt = 0;
-    for (int i=0; i<in.width(); i++) {
-        for (int j=0; j<in.height(); j++) {
-            int M = N;
-            bool flag = 1;
-            int rmax = 0, gmax = 0, bmax = 0;
-            int rmin = 300, gmin = 300, bmin = 300;
-            int r = 0, g = 0, b = 0;
-            for (M = N; M <= N + delta; M++) {
-                if (M == 2) ttt++;
-                int count = 0;
-                rmax = gmax = bmax = 0;
-                rmin = gmin = bmin = 300;
-                for (int k=-M; k<=M; k++) {
-                    for (int l=-M; l<=M; l++) {
+            if (1==1 || RED(in.pixel(i, j)) > th && GREEN(in.pixel(i, j)) > th && BLUE(in.pixel(i, j)) > th) {
+                for (int k=-N; k<=N; k++) {
+                    for (int l=-N; l<=N; l++) {
                         if (k + i < 0 || k + i >= in.width() || l+j < 0 || l + j >= in.height()) {
                             continue;
                         }
                         ar[count] = RED(in.pixel(i+k, j+l));
                         ag[count] = GREEN(in.pixel(i+k, j+l));
                         ab[count] = BLUE(in.pixel(i+k, j+l));
-                        if (rmax < RED(in.pixel(i+k, j+l))) {
-                            rmax = RED(in.pixel(i+k, j+l));
-                        }
-                        if (rmin > RED(in.pixel(i+k, j+l))) {
-                            rmin = RED(in.pixel(i+k, j+l));
-                        }
-                        if (gmax < GREEN(in.pixel(i+k, j+l))) {
-                            gmax = GREEN(in.pixel(i+k, j+l));
-                        }
-                        if (gmin > GREEN(in.pixel(i+k, j+l))) {
-                            gmin = GREEN(in.pixel(i+k, j+l));
-                        }
-                        if (bmax < BLUE(in.pixel(i+k, j+l))) {
-                            bmax = BLUE(in.pixel(i+k, j+l));
-                        }
-                        if (bmin > BLUE(in.pixel(i+k, j+l))) {
-                            bmin = BLUE(in.pixel(i+k, j+l));
-                        }
                         count++;
                     }
                 }
@@ -577,26 +524,163 @@ void CTransform::AdMedFilter(QImage& in, QImage& out, int N, int delta)
                     g = PIXELRANGE(ROUND( (ag[count / 2] + ag[count / 2 - 1]) / 2 ));
                     b = PIXELRANGE(ROUND( (ab[count / 2] + ab[count / 2 - 1]) / 2 ));
                 }
-                if (r - rmin > 0 && r - rmax < 0 && g - gmin > 0 && g - gmax < 0 && b - bmin > 0 && b - bmax < 0) {
-                    flag = 0;
-                    break;
-                }
-            }
-            if (flag) {
-                out.setPixel(i, j, in.pixel(i, j));
+                out.setPixel(i, j, PIXEL(PIXELRANGE(ROUND(r)), PIXELRANGE(ROUND(g)), PIXELRANGE(ROUND(b))));
             }
             else {
-                if (RED(in.pixel(i, j)) - rmin > 0 && RED(in.pixel(i, j)) - rmax < 0 &&
-                        GREEN(in.pixel(i, j)) - gmin > 0 && GREEN(in.pixel(i, j)) - gmax < 0 &&
-                        BLUE(in.pixel(i, j)) - bmin > 0 && BLUE(in.pixel(i, j)) - bmax < 0) {
-                    out.setPixel(i, j, PIXEL(PIXELRANGE(ROUND(r)), PIXELRANGE(ROUND(g)), PIXELRANGE(ROUND(b))));
+                out.setPixel(i, j, in.pixel(i, j));
+            }
+        }
+    }
+    delete [] ar;
+    delete [] ag;
+    delete [] ab;
+*/
+
+void CTransform::MedFilter(QImage& in, QImage& out, int N, int th)
+{
+    int W = 2*N + 1;
+    srand(QTime::currentTime().msec());
+    int *ar = new int[W*W];
+    int *ag = new int[W*W];
+    int *ab = new int[W*W];
+    for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            int count = 0;
+            int r = 0, g = 0, b = 0;
+            int c1 = RED(in.pixel(i, j));
+            int c2 = GREEN(in.pixel(i, j));
+            int c3 = BLUE(in.pixel(i, j));
+            if (i == j && j == 20)
+                qDebug() << c1 << " " << c2 << " " << c3 << " " << th;
+            if (c1 > th && c2 > th && c3 > th) {
+                for (int k=-N; k<=N; k++) {
+                    for (int l=-N; l<=N; l++) {
+                        if (k + i < 0 || k + i >= in.width() || l+j < 0 || l + j >= in.height()) {
+                            continue;
+                        }
+                        ar[count] = RED(in.pixel(i+k, j+l));
+                        ag[count] = GREEN(in.pixel(i+k, j+l));
+                        ab[count] = BLUE(in.pixel(i+k, j+l));
+                        count++;
+                    }
+                }
+                qsort(ar, count, sizeof(int), compare_int_val);
+                qsort(ag, count, sizeof(int), compare_int_val);
+                qsort(ab, count, sizeof(int), compare_int_val);
+                if (count % 2) {
+                    r = PIXELRANGE(ROUND(ar[count / 2]));
+                    g = PIXELRANGE(ROUND(ag[count / 2]));
+                    b = PIXELRANGE(ROUND(ab[count / 2]));
                 }
                 else {
+                    r = PIXELRANGE(ROUND( (ar[count / 2] + ar[count / 2 - 1]) / 2 ));
+                    g = PIXELRANGE(ROUND( (ag[count / 2] + ag[count / 2 - 1]) / 2 ));
+                    b = PIXELRANGE(ROUND( (ab[count / 2] + ab[count / 2 - 1]) / 2 ));
+                }
+                out.setPixel(i, j, PIXEL(PIXELRANGE(ROUND(r)), PIXELRANGE(ROUND(g)), PIXELRANGE(ROUND(b))));
+            }
+            else {
+                out.setPixel(i, j, in.pixel(i, j));
+            }
+        }
+    }
+    delete [] ar;
+    delete [] ag;
+    delete [] ab;
+}
+
+void CTransform::AdMedFilter(QImage& in, QImage& out, int N, int delta, int th)
+{
+    int W = 2*(N+2) + 1;
+    srand(QTime::currentTime().msec());
+    int *ar = new int[W*W];
+    int *ag = new int[W*W];
+    int *ab = new int[W*W];
+    int ttt = 0;
+    for (int i=0; i<in.width(); i++) {
+        for (int j=0; j<in.height(); j++) {
+            int c1 = RED(in.pixel(i, j));
+            int c2 = GREEN(in.pixel(i, j));
+            int c3 = BLUE(in.pixel(i, j));
+            if (i == j && j == 20)
+                qDebug() << "so: " << c1 << " " << c2 << " " << c3 << " " << th;
+            if (c1 > th && c2 > th && c3 > th) {
+                int M = N;
+                bool flag = 1;
+                int rmax = 0, gmax = 0, bmax = 0;
+                int rmin = 300, gmin = 300, bmin = 300;
+                int r = 0, g = 0, b = 0;
+                for (M = N; M <= N + delta; M++) {
+                    if (M == 2) ttt++;
+                    int count = 0;
+                    rmax = gmax = bmax = 0;
+                    rmin = gmin = bmin = 300;
+                    for (int k=-M; k<=M; k++) {
+                        for (int l=-M; l<=M; l++) {
+                            if (k + i < 0 || k + i >= in.width() || l+j < 0 || l + j >= in.height()) {
+                                continue;
+                            }
+                            ar[count] = RED(in.pixel(i+k, j+l));
+                            ag[count] = GREEN(in.pixel(i+k, j+l));
+                            ab[count] = BLUE(in.pixel(i+k, j+l));
+                            if (rmax < RED(in.pixel(i+k, j+l))) {
+                                rmax = RED(in.pixel(i+k, j+l));
+                            }
+                            if (rmin > RED(in.pixel(i+k, j+l))) {
+                                rmin = RED(in.pixel(i+k, j+l));
+                            }
+                            if (gmax < GREEN(in.pixel(i+k, j+l))) {
+                                gmax = GREEN(in.pixel(i+k, j+l));
+                            }
+                            if (gmin > GREEN(in.pixel(i+k, j+l))) {
+                                gmin = GREEN(in.pixel(i+k, j+l));
+                            }
+                            if (bmax < BLUE(in.pixel(i+k, j+l))) {
+                                bmax = BLUE(in.pixel(i+k, j+l));
+                            }
+                            if (bmin > BLUE(in.pixel(i+k, j+l))) {
+                                bmin = BLUE(in.pixel(i+k, j+l));
+                            }
+                            count++;
+                        }
+                    }
+                    qsort(ar, count, sizeof(int), compare_int_val);
+                    qsort(ag, count, sizeof(int), compare_int_val);
+                    qsort(ab, count, sizeof(int), compare_int_val);
+                    if (count % 2) {
+                        r = PIXELRANGE(ROUND(ar[count / 2]));
+                        g = PIXELRANGE(ROUND(ag[count / 2]));
+                        b = PIXELRANGE(ROUND(ab[count / 2]));
+                    }
+                    else {
+                        r = PIXELRANGE(ROUND( (ar[count / 2] + ar[count / 2 - 1]) / 2 ));
+                        g = PIXELRANGE(ROUND( (ag[count / 2] + ag[count / 2 - 1]) / 2 ));
+                        b = PIXELRANGE(ROUND( (ab[count / 2] + ab[count / 2 - 1]) / 2 ));
+                    }
+                    if (r - rmin > 0 && r - rmax < 0 && g - gmin > 0 && g - gmax < 0 && b - bmin > 0 && b - bmax < 0) {
+                        flag = 0;
+                        break;
+                    }
+                }
+                if (flag) {
                     out.setPixel(i, j, in.pixel(i, j));
                 }
-            }
+                else {
+                    if (RED(in.pixel(i, j)) - rmin > 0 && RED(in.pixel(i, j)) - rmax < 0 &&
+                            GREEN(in.pixel(i, j)) - gmin > 0 && GREEN(in.pixel(i, j)) - gmax < 0 &&
+                            BLUE(in.pixel(i, j)) - bmin > 0 && BLUE(in.pixel(i, j)) - bmax < 0) {
+                        out.setPixel(i, j, PIXEL(PIXELRANGE(ROUND(r)), PIXELRANGE(ROUND(g)), PIXELRANGE(ROUND(b))));
+                    }
+                    else {
+                        out.setPixel(i, j, in.pixel(i, j));
+                    }
+                }
 
-            out.setPixel(i, j, PIXEL(PIXELRANGE(ROUND(r)), PIXELRANGE(ROUND(g)), PIXELRANGE(ROUND(b))));
+                out.setPixel(i, j, PIXEL(PIXELRANGE(ROUND(r)), PIXELRANGE(ROUND(g)), PIXELRANGE(ROUND(b))));
+            }
+            else {
+                out.setPixel(i, j, in.pixel(i, j));
+            }
         }
     }
     qDebug() << ttt;
@@ -926,8 +1010,8 @@ void CTransform::addFINoise(QImage& in, QImage& out, int num, double value, int 
     for (int i=0; i<num; i++) {
             in_[in.height()* (rand() % 512) + rand() % 512][0] = value;
     }
-    /*spectrum(out, in_);
-            return;*/
+    spectrum(out, in_);
+            return;
     p2 = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_BACKWARD, FFTW_ESTIMATE);
     fftw_execute(p2);
 
@@ -972,7 +1056,9 @@ void CTransform::addFINoise(QImage& in, QImage& out, int num, double value, int 
     fftw_free(in_);
 }
 
-void CTransform::Wiener(QImage& in, QImage& out, int N, int radius, int stage)
+
+
+void CTransform::Wiener(QImage& in, QImage& out, int N, double S, int radius, int stage)
 {
     int ch = 3;
     double y, r;
@@ -1009,118 +1095,12 @@ void CTransform::Wiener(QImage& in, QImage& out, int N, int radius, int stage)
     p = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_execute(p);
 
-    if (stage == 0) {
-        spectrum(out, in_);
-        return;
-    }
-
-    for (int i=0; i<in.width(); i++) {
-        for (int j=0; j<in.height(); j++) {
-            double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
-            double k = (exp(-0.5*pow(D/70, 2)));
-            MULC2R(in_[i*in.height()+j], k);
-        }
-    }
-
-    if (stage == 7) {
-        spectrum(out, in_);
-        return;
-    }
-
-    /*for (int i=0; i<in.width(); i++) {
-        for (int j=0; j<in.height(); j++) {
-            double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
-            double k = (exp(-0.5*pow(D/70, 2)));
-            MULC2R(in_[i*in.height()+j], k);
-        }
-    }*/
-
-    if (stage == 1) {
-        spectrum(out, in_);
-        return;
-    }
-
-    p2 = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_BACKWARD, FFTW_ESTIMATE);
-    fftw_execute(p2);
-
-    double max = 0;
-    double min = fabs(in_[0][0]);
-    for (int i=0; i<in.width(); i++) {
-        for (int j=0; j<in.height(); j++) {
-            double v = fabs(in_[i*in.height()+j][0]);
-            if (v > max) {
-                max = v;
-            }
-            if (v < min) {
-                min = v;
-            }
-        }
-    }
-
-
-    for (int i=0; i<in.width(); i++) {
-        for (int j=0; j<in.height(); j++) {
-            double val = (fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());
-            int intval = PIXELRANGE(ROUND(val));
-            switch(ch) {
-            case channels::BLUE:
-                out.setPixel(i, j, PIXEL(RED(in.pixel(i, j)), GREEN(in.pixel(i, j)), intval));
-                break;
-            case channels::RED:
-                out.setPixel(i, j, PIXEL(intval, GREEN(in.pixel(i, j)), BLUE(in.pixel(i, j))));
-                break;
-            case channels::GREEN:
-                out.setPixel(i, j, PIXEL(RED(in.pixel(i, j)), intval, BLUE(in.pixel(i, j))));
-                break;
-            case channels::Y:
-                RGBtoYCbCr(in.pixel(i, j), y, cr, cb);
-                out.setPixel(i, j, YCbCrtoRGB(val, cr, cb));
-                break;
-            }
-        }
-    }
-
-    if (stage == 2) {
-        return;
-    }
-
-    for (int i=0; i<in.width(); i++) {
-        for (int j=0; j<in.height(); j++) {
-            switch(ch) {
-            case channels::BLUE:
-                r = BLUE(out.pixel(i, j));
-                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
-                break;
-            case channels::RED:
-                r = RED(out.pixel(i, j));
-                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
-                break;
-            case channels::GREEN:
-                r = GREEN(out.pixel(i, j));
-                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
-                break;
-            case channels::Y:
-                RGBtoYCbCr(out.pixel(i, j), y, cr, cb);
-                in_[i*in.height()+j][0] = ((i+j)%2)?y:-y;
-                break;
-            }
-            in_[i*in.height()+j][1] = 0.0;
-        }
-    }
-
-    fftw_execute(p);
-
-    if (stage == 3) {
-        spectrum(out, in_);
-        return;
-    }
-
     if (N > 0) {
         for (int i=0; i<in.width(); i++) {
             for (int j=0; j<in.height(); j++) {
                 double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
                 if (D < radius) {
-                    double k = 1 / (exp(-0.5*pow(D/70, 2)));
+                    double k = 1 / (exp(-0.5*pow(D/S, 2)));
                     double h = 1 / (1 +k*k/N);
                     MULC2R(in_[i*in.height()+j], h*k);
                 }
@@ -1156,7 +1136,7 @@ void CTransform::Wiener(QImage& in, QImage& out, int N, int radius, int stage)
     p2 = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_BACKWARD, FFTW_ESTIMATE);
     fftw_execute(p2);
 
-    max = 0;
+  /*  max = 0;
     min = fabs(in_[0][0]);
     for (int i=0; i<in.width(); i++) {
         for (int j=0; j<in.height(); j++) {
@@ -1171,7 +1151,7 @@ void CTransform::Wiener(QImage& in, QImage& out, int N, int radius, int stage)
     }
 
     qDebug() << min / (in.height()*in.width()) << "_" << max / (in.height()*in.width());
-
+*/
     for (int i=0; i<in.width(); i++) {
         for (int j=0; j<in.height(); j++) {
             double val = (fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());//((fabs(in_[i*in.height()+j][0])) - min) * (255.0 / (max-min));//(fabs(in_[i*in.height()+j][0])-min) / (max-min) * 255;//(fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());
@@ -1199,13 +1179,13 @@ void CTransform::Wiener(QImage& in, QImage& out, int N, int radius, int stage)
     fftw_free(in_);
 }
 
-void CTransform::WienerGauss(QImage& in, QImage& out, int N, int radius, int stage)
+void CTransform::GaussBlur(QImage& in, QImage& out, double S, int stage)
 {
     int ch = 3;
     double y, r;
     int cb, cr;
 
-    qDebug() << "OOO" << stage;
+    //qDebug() << "OOO" << stage;
 
     fftw_complex* in_ = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * in.height()*in.width());
     //qDebug() << "FFT";
@@ -1244,7 +1224,7 @@ void CTransform::WienerGauss(QImage& in, QImage& out, int N, int radius, int sta
     for (int i=0; i<in.width(); i++) {
         for (int j=0; j<in.height(); j++) {
             double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
-            double k = (exp(-0.5*pow(D/70, 2)));
+            double k = (exp(-0.5*pow(D/S, 2)));
             MULC2R(in_[i*in.height()+j], k);
         }
     }
@@ -1306,121 +1286,6 @@ void CTransform::WienerGauss(QImage& in, QImage& out, int N, int radius, int sta
             }
         }
     }
-
-    if (stage == 2) {
-        return;
-    }
-
-    for (int i=0; i<in.width(); i++) {
-        for (int j=0; j<in.height(); j++) {
-            switch(ch) {
-            case channels::BLUE:
-                r = BLUE(out.pixel(i, j));
-                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
-                break;
-            case channels::RED:
-                r = RED(out.pixel(i, j));
-                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
-                break;
-            case channels::GREEN:
-                r = GREEN(out.pixel(i, j));
-                in_[i*in.height()+j][0] = ((i+j)%2)?r:-r;
-                break;
-            case channels::Y:
-                RGBtoYCbCr(out.pixel(i, j), y, cr, cb);
-                in_[i*in.height()+j][0] = ((i+j)%2)?y:-y;
-                break;
-            }
-            in_[i*in.height()+j][1] = 0.0;
-        }
-    }
-
-    fftw_execute(p);
-
-    if (stage == 3) {
-        spectrum(out, in_);
-        return;
-    }
-
-    if (N > 0) {
-        for (int i=0; i<in.width(); i++) {
-            for (int j=0; j<in.height(); j++) {
-                double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
-                if (D < radius) {
-                    double k = 1 / (exp(-0.5*pow(D/70, 2)));
-                    double h = 1 / (1 +k*k/N);
-                    MULC2R(in_[i*in.height()+j], h*k);
-                }
-            }
-        }
-    }
-
-    /*if (N > 0) {
-        for (int i=0; i<in.width(); i++) {
-            for (int j=0; j<in.height(); j++) {
-                double D = sqrt(POW2(i - (in.width()-1)/2) + POW2(j - (in.height()-1)/2));
-                double k = 1 / (exp(-0.5*pow(D/70, 2)));
-                double k2 = exp(-0.5*pow(D/70, 2));
-                k2 = k2*k2;
-                MULC2R(in_[i*in.height()+j], k * k2 / (k2 + N));
-            }
-        }
-    }*/
-
-    if (stage == 4) {
-        spectrum(out, in_);
-        return;
-    }
-
-    /*spectrum(out, in_);
-            return;*/
-
-    if (stage == 4) {
-        spectrum(out, in_);
-        return;
-    }
-
-    p2 = fftw_plan_dft_2d(in.height(), in.width(), in_, in_, FFTW_BACKWARD, FFTW_ESTIMATE);
-    fftw_execute(p2);
-
-    max = 0;
-    min = fabs(in_[0][0]);
-    for (int i=0; i<in.width(); i++) {
-        for (int j=0; j<in.height(); j++) {
-            double v = fabs(in_[i*in.height()+j][0]);
-            if (v > max) {
-                max = v;
-            }
-            if (v < min) {
-                min = v;
-            }
-        }
-    }
-
-    qDebug() << min / (in.height()*in.width()) << "_" << max / (in.height()*in.width());
-
-    for (int i=0; i<in.width(); i++) {
-        for (int j=0; j<in.height(); j++) {
-            double val = (fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());//((fabs(in_[i*in.height()+j][0])) - min) * (255.0 / (max-min));//(fabs(in_[i*in.height()+j][0])-min) / (max-min) * 255;//(fabs(in_[i*in.height()+j][0])) / (in.height()*in.width());
-            int intval = PIXELRANGE(ROUND(val));
-            switch(ch) {
-            case channels::BLUE:
-                out.setPixel(i, j, PIXEL(RED(in.pixel(i, j)), GREEN(in.pixel(i, j)), intval));
-                break;
-            case channels::RED:
-                out.setPixel(i, j, PIXEL(intval, GREEN(in.pixel(i, j)), BLUE(in.pixel(i, j))));
-                break;
-            case channels::GREEN:
-                out.setPixel(i, j, PIXEL(RED(in.pixel(i, j)), intval, BLUE(in.pixel(i, j))));
-                break;
-            case channels::Y:
-                RGBtoYCbCr(in.pixel(i, j), y, cr, cb);
-                out.setPixel(i, j, YCbCrtoRGB(val, cr, cb));
-                break;
-            }
-        }
-    }
-
     fftw_destroy_plan(p);
     fftw_destroy_plan(p2);
     fftw_free(in_);

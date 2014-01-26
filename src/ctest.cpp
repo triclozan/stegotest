@@ -6,6 +6,7 @@
 #include <QBuffer>
 #include <math.h>
 #include "cparamhelper.h"
+#include "ctesttransform.h"
 #include "util.h"
 #include "ECC/rsccode.h"
 
@@ -40,7 +41,8 @@ void CTest::Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArr
     tsize = size = block = parity = 0;
     num = 2;
     CTest::SetParams(params);
-
+    qDebug() << "SIZE!!!";
+    qDebug() << tsize;
     if(block && parity) {
         int encoded_len = ((size + block - 1) / block) * (block + parity);
         SetParams(params);
@@ -150,6 +152,7 @@ void CTest::Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArr
     if (!tsize) {
         tsize = size;
     }
+
     int rep = tsize / size;
     bytes.resize(size*rep);
     /*for (int i=0; i<size; i++) {
@@ -235,6 +238,8 @@ void CTest::Visual(CAlgorithm* alg, QString& params, QString& alg_params, const 
     CParamHelper ph;
     QString res_name;
     ph.AddToMap(&res_name, ph.STRING, "name");
+    ph.AddToMap(&size, ph.INT, "size");
+    ph.AddToMap(&tsize, ph.INT, "tsize");
     ph.SetParams(params);
     QImage in;
     in.load(container_name);
@@ -259,9 +264,86 @@ void CTest::Visual(CAlgorithm* alg, QString& params, QString& alg_params, const 
     alg->SetParams(alg_params);
     alg->GenKey(bytes);
     alg->Hide(in, bytes);
-    alg->Restore(in, bytes_out);
+    //alg->Restore(in, bytes_out);
     //qDebug() << res_name;
     in.save(res_name);
+}
+
+void CTest::Picture(CAlgorithm* alg, QString& params, QString& alg_params, const QString& container_name, const QString* watermark_name)
+{
+    CParamHelper ph;
+    QString res_name;
+    QString wm_name;
+    ph.AddToMap(&res_name, ph.STRING, "name");
+    ph.AddToMap(&wm_name, ph.STRING, "wm_name");
+    ph.AddToMap(&size, ph.INT, "size");
+    ph.AddToMap(&tsize, ph.INT, "tsize");
+    ph.SetParams(params);
+    QImage in;
+    in.load(container_name);
+
+    QImage wm;
+    wm.load(wm_name);
+    QBitArray bits(wm.width()*wm.height());
+    QByteArray bytes;
+    QVector<double> res(wm.width()*wm.height());
+    for (int i=0; i<wm.width(); i++) {
+        for (int j=0; j<wm.height(); j++) {
+            unsigned int p = BLUE(wm.pixel(i, j));
+            if (!p) {
+                bits[i*wm.height() + j] = 0;
+            }
+            else {
+                bits[i*wm.height() + j] = 1;
+            }
+        }
+    }
+    bytes = CAlgorithm::bitToByte(bits);
+    QImage resImage(wm);
+
+    alg->SetParams(alg_params);
+    alg->GenKey(bytes);
+    alg->Hide(in, bytes);
+    qDebug() << "hide!";
+    CTest* test = new CTestTransform;
+    test->Attack(in, params);
+    //Attack();
+    qDebug() << "attack! " << params;
+    alg->Restore(in, res);
+    qDebug() << "restore!";
+    for (int i=0; i<wm.width(); i++) {
+        for (int j=0; j<wm.height(); j++) {
+            int k = PIXELRANGE(res[i*wm.height() + j] * 255);
+            resImage.setPixel(i, j, PIXEL(k, k, k));
+        }
+    }
+    resImage.save(res_name);
+    return;
+
+    /*QImage orig(in);
+    QByteArray bytes;
+    if (watermark_name != 0) {
+        QFile wm(*watermark_name);
+        wm.open(QIODevice::ReadOnly);
+        bytes = wm.readAll();
+        wm.close();
+    }
+    else {
+        srand(QTime::currentTime().msec());
+        bytes.resize(wm_size);
+        for (int i=0; i<wm_size; i++) {
+            bytes[i] = rand() % 256;
+        }
+    }
+
+    QByteArray bytes_out;
+    //qDebug() << alg_params;
+    alg->SetParams(alg_params);
+    alg->GenKey(bytes);
+    alg->Hide(in, bytes);
+    //alg->Restore(in, bytes_out);
+    //qDebug() << res_name;
+    in.save(res_name);*/
 }
 
 void CTest::SetParams(QString params)

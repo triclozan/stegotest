@@ -3,6 +3,7 @@
 #include <QString>
 #include <QImage>
 #include <QBitArray>
+#include <QVector>
 #include <QFile>
 #include <QColor>
 #include <QDebug>
@@ -15,10 +16,12 @@ public:
     //virtual ~CAlgorithm();
     virtual void Hide(QImage& container, QByteArray& watermark, QByteArray& key)=0;
     virtual void Restore(QImage& container, QByteArray& watermark, QByteArray& key);
+    virtual void Restore(QImage& container, QVector<double>& res, QByteArray& key);
     virtual double Detect(QImage& container, QByteArray& watermark, QByteArray& key);
     virtual bool DetectStrict(QImage& container, QByteArray& watermark, QByteArray& key, int thresh=0.7);
     void Hide(QImage& container, QByteArray& watermark);
     void Restore(QImage& container, QByteArray& watermark);
+    void Restore(QImage& container, QVector<double> &res);
     void Hide(QImage& container, QByteArray& watermark, QString& p);
     void Restore(QImage& container, QByteArray& watermark, QString& p);
     void SetParams(QByteArray& p);
@@ -30,8 +33,8 @@ public:
     void RestoreFromFile(const QString& container_name, const QString& watermark_name, QByteArray& key);
     void HideToFile(const QString& container_name, const QString& watermark_name, const QString& result_name);
     void RestoreFromFile(const QString& container_name, const QString& watermark_name);
-    QByteArray bitToByte(QBitArray bits);
-    QBitArray byteToBit(QByteArray bytes);
+    static QByteArray bitToByte(QBitArray bits);
+    static QBitArray byteToBit(QByteArray bytes);
     virtual ~CAlgorithm();
 protected:
     QByteArray key;  

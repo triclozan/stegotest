@@ -22,7 +22,7 @@ namespace channels {
     enum channels {BLUE=0, GREEN=1, RED=2, Y=3};
 }
 
-enum Transforms {tUNoise=1, tINoise=2, tBINoise=3, tGNoise=4, tFINoise=5, tAMFilter=10, tGMFilter=11, tHMFilter=12, tMedFilter=13, tAdMedFilter=14, tBLFilter=15, tAdLocalFilter=16, tMPFilter=17, tSharpen=20, tJpeg=30, tFFT=50, tWavelet=51, tWiener=52, tHisteq=60};
+enum Transforms {tUNoise=1, tINoise=2, tBINoise=3, tGNoise=4, tFINoise=5, tAMFilter=10, tGMFilter=11, tHMFilter=12, tMedFilter=13, tAdMedFilter=14, tBLFilter=15, tAdLocalFilter=16, tMPFilter=17, tGBlur=18, tSharpen=20, tJpeg=30, tFFT=50, tWavelet=51, tWiener=52, tHisteq=60};
 
 unsigned int YCbCrtoRGB(double y, int cr, int cb);
 void RGBtoYCbCr(unsigned int value, double& y, int& cr, int& cb);

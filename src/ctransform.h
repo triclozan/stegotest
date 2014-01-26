@@ -20,16 +20,16 @@ public:
     void BLFilter(QImage& in, QImage& out, double sigma, double r, int N=1);
     void GMFilter(QImage& in, QImage& out, int N = 1);
     void HMFilter(QImage& in, QImage& out, int N = 1);
-    void MedFilter(QImage& in, QImage& out, int N = 1);
+    void MedFilter(QImage& in, QImage& out, int N = 1, int th = -1);
     void MPFilter(QImage& in, QImage& out, int N = 1);
-    void AdMedFilter(QImage& in, QImage& out, int N = 1, int delta = 2);
+    void AdMedFilter(QImage& in, QImage& out, int N = 1, int delta = 2, int th = -1);
     void Sharpen(QImage& in, QImage& out, double strength = 0.1);
     void FFT(QImage& in, QImage& out, int mode = 0);
     void Wavelet(QImage& in, QImage& out, int level);
     void HistEq(QImage& in, QImage& out);
     void AdLocalFilter(QImage& in, QImage& out, double d, int N = 1);
-    void Wiener(QImage& in, QImage& out, int N = 70, int radius = 300, int stage = 2);
-    void WienerGauss(QImage& in, QImage& out, int N, int radius, int stage);
+    void Wiener(QImage& in, QImage& out, int N = 200, double S = 70, int radius = 300, int stage = 10);
+    void GaussBlur(QImage& in, QImage& out, double S, int stage = 10);
 };
 
 #endif // CTRANSFORM_H

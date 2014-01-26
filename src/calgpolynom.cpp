@@ -1,11 +1,17 @@
-#include "calgfridrich2.h"
+#include "calgpolynom.h"
 #include "dct.h"
 #include <QTime>
 #include <math.h>
 #include "util.h"
 
-CAlgFridrich2::CAlgFridrich2() {
-    a = 0.1;
+int Lc[8] = {1,2,3,4,5,6,7,8};
+int CAlgPolynom::Lc[8] = {1,2,3,4,5,6,7,8};
+double CAlgPolynom::fi(int i, double x) {
+    return cos(i*acos(x));
+}
+
+CAlgPolynom::CAlgPolynom() {
+    a = 0.35;
     gamma = 1;
     mode = 3;
     ch = 3;
@@ -13,7 +19,7 @@ CAlgFridrich2::CAlgFridrich2() {
     spectrum = 0;
 }
 
-void CAlgFridrich2::Hide(QImage& container, QByteArray& watermark, QByteArray& key)
+void CAlgPolynom::Hide(QImage& container, QByteArray& watermark, QByteArray& key)
 {
     qDebug() << a << " " << gamma;
     qDebug() << "L: " << L;
@@ -21,6 +27,7 @@ void CAlgFridrich2::Hide(QImage& container, QByteArray& watermark, QByteArray& k
     //qDebug() << keyData.seed;
     qsrand(keyData.seed);
     QBitArray bits = byteToBit(watermark);
+
     int bsize = bits.size();
     int k = 0;
     int l = 0;
@@ -38,6 +45,7 @@ void CAlgFridrich2::Hide(QImage& container, QByteArray& watermark, QByteArray& k
     double* B = new double [Xb*Yb];
     int Nmid = Xb*Yb*0.3;//4080;
     double** Spr = new double* [Nb];
+    double* encData = new double[Nmid];
     for (int i=0; i<Nb; i++) {
         Spr[i] = new double [Nmid];
     }
@@ -108,7 +116,7 @@ void CAlgFridrich2::Hide(QImage& container, QByteArray& watermark, QByteArray& k
         }
         //qDebug() << tau[i];
     }
-    qDebug() << tau_max;
+    //qDebug() << tau_max;
     int H = L;
     int count = L + 1;
     while (count < bits.size()) {
@@ -124,6 +132,29 @@ void CAlgFridrich2::Hide(QImage& container, QByteArray& watermark, QByteArray& k
         Lm--;
         countm += 2*(Xb-j);
         j++;
+    }
+
+    int cc = Nmid * 8 / bits.size();
+    int cn = bits.size() / 8;
+    double cstep = 1.98 / double(cc);
+    qDebug() << "COEFF: " << cc << " " << cn << " " << cstep;
+    for (int i = 0; i < cn; i++) {
+        int k[8];
+        for (int l=0; l<8; l++) {
+            k[l] = bits[i*8 + l];
+            bits[i*8 + l];
+        }
+        double x = -0.99;
+        //double x = -1;
+        for (int j=0; j<cc; j++) {
+            double res = 0;
+            for (int l=0; l<8; l++) {
+                res += k[l] * fi(Lc[l], x);
+            }
+            x = x + cstep;
+            encData[i * cc + j] = res;
+            //qDebug() << x << " " << res;
+        }
     }
 
     for (int b=0; b<Nb; b++) {
@@ -174,11 +205,6 @@ void CAlgFridrich2::Hide(QImage& container, QByteArray& watermark, QByteArray& k
                     A[i*Yb + j] = (A[i*Yb + j] - mean) * cnorm;
                     break;
                 }
-                /*QColor color = QColor(container.pixel(bx+i, by+j));
-                double Y = 0.299*color.red() + 0.587*color.green() + 0.114*color.blue();
-                Cb[i][j] = -0.169*color.red() - 0.331*color.green() + 0.499*color.blue();
-                Cr[i][j] = 0.499*color.red() - 0.418*color.green() - 0.0813*color.blue();
-                A[i*Yb + j] = (Y - mean) * cnorm;*/
             }
         }
 
@@ -189,66 +215,18 @@ void CAlgFridrich2::Hide(QImage& container, QByteArray& watermark, QByteArray& k
         count = 0;
         countm = 0;
         double max_coeff = 0;
-        for (int i1=0; i1<Xb; i1++) {
-            for (int i2=0; i2<Yb; i2++) {
-                if (L <= i1 + i2 && i1 + i2 <= H) {
-                    if (B[i1 * Yb + i2] > max_coeff) {
-                        max_coeff = B[i1 * Yb + i2];
-                    }
-                    double d = fabs(B[i1 * Yb + i2]);
-                    int sign = SIGN(B[i1 * Yb + i2]);
-                    double t1, t2, t = 1;
-                    int ind;
-                    //qDebug() << B[i1][i2];
-                    for (ind=0; ind<tau_max; ind++) {
-                        if (d < tau[ind]) {
-                            break;
-                        }
-                        t = -t;
-                    }
-                    if (SIGN(bits[count]) == t) {
-                        if (ind == 0) {
-                            t1 = 0;
-                            t2 = tau[0];
-                        }
-                        else {
-                            t1 = tau[ind - 1];
-                            t2 = tau[ind];
-                        }
-                        if (fabs(d - t1) < 0.5 || fabs(d - t2) < 0.5) {
-                            B[i1 * Yb + i2] = sign * ((t2 - t1) * 0.5/*((qrand()%50 + 25) / 100.0)*/ + t1) /*/ 2.0*/;
-                        }
-                    }
-                    else {
-                        if (ind < 2) {
-                            t1 = tau[ind];
-                            t2 = tau[ind + 1];
-                        }
-                        else {
-                            t1 = tau[ind - 2];
-                            t2 = tau[ind - 1];
-                        }
-                        B[i1 * Yb + i2] = sign * ((t2 - t1) * 0.5/*((qrand()%50 + 25) / 100.0)*/ + t1) /*/ 2.0*/;
-                    }
 
-                    count++;
-                    if (count >= bits.size()) break;
-                }
-            }
-            if (count >= bits.size()) break;
-        }
-        qDebug() << max_coeff;
         double min = 10000;
         double max = -10000;
         for (int i1=0; i1<Xb; i1++) {
             for (int i2=0; i2<Yb; i2++) {
                 if (Lm <= i1 + i2 + 1 && i1 + i2 + 1 <= Hm) {
-                    B[i1 * Yb + i2] += Spr[b][countm] * gamma;
-                    if (Spr[b][countm] * gamma > max) {
-                        max = Spr[b][countm] * gamma;
+                    B[i1 * Yb + i2] += encData[countm] * gamma;
+                    if (encData[countm] * gamma > max) {
+                        max = encData[countm] * gamma;
                     }
-                    if (Spr[b][countm] * gamma < min) {
-                        min = Spr[b][countm] * gamma;
+                    if (encData[countm] * gamma < min) {
+                        min = encData[countm] * gamma;
                     }
                     countm++;
                     if (countm >= Nmid) break;
@@ -332,11 +310,14 @@ void CAlgFridrich2::Hide(QImage& container, QByteArray& watermark, QByteArray& k
     delete [] Spr;
     delete [] eps;
     delete [] eta;
+    qDebug() << "YYYYYY";
     //container.save("F:\\koh.bmp");
 }
 
-void CAlgFridrich2::Restore(QImage& container, QByteArray& watermark, QByteArray& key)
+void CAlgPolynom::Restore(QImage& container, QByteArray& watermark, QByteArray& key)
 {
+
+    qDebug() << "polynom";
     keyStruct keyData = *(keyStruct*)(key.constData());
     qsrand(keyData.seed);
     //qDebug() << keyData.seed;
@@ -372,6 +353,7 @@ void CAlgFridrich2::Restore(QImage& container, QByteArray& watermark, QByteArray
     //double a = 0.3;
     double a2 = (1 + a) / (1 - a);
     double tau[3000];
+    qDebug() << "RESTORE******************";
     tau[0] = 1;
     int tau_max = 1;
     for (int i=1; i<3000; i++) {
@@ -470,30 +452,7 @@ void CAlgFridrich2::Restore(QImage& container, QByteArray& watermark, QByteArray
 
         qDebug() << "mode " << mode;
 
-        if (mode & 1) {
-            for (int i1=0; i1<Xb; i1++) {
-                for (int i2=0; i2<Yb; i2++) {
-                    if (L <= i1 + i2 && i1 + i2 <= H) {
-                        //qDebug() << B[i1][i2];
-                        double d = fabs(B[i1 * Yb + i2]);
-                        int t = 1;
-                        int ind;
-                        for (ind=0; ind<tau_max; ind++) {
-                            if (d < tau[ind]) {
-                                break;
-                            }
-                            t = -t;
-                        }
-                        data[count] += t;
-                        count++;
-                        if (count >= bits.size()) break;
-                    }
-                }
-                if (count >= bits.size()) break;
-            }
-        }
-
-        if (mode & 2) {
+        //if (mode & 2) {
             for (int i1=0; i1<Xb; i1++) {
                 for (int i2=0; i2<Yb; i2++) {
                     if (Lm <= i1 + i2 + 1 && i1 + i2 + 1 <= Hm) {
@@ -505,36 +464,33 @@ void CAlgFridrich2::Restore(QImage& container, QByteArray& watermark, QByteArray
                 }
                 if (countm >= Nmid) break;
             }
-
-            for (int i=0; i<bsize/Nb; i++) {
-                int cf = b * bsize / Nb + i;
-                //int y = 0;
-                for (int m=0; m<16; m++) {
-                    K[m] = 0;
-                    for (int j=0; j<Nmid; j++) {
-                        /*if (mid[y] < mid[j]) {
-                            y = j;
-                        }*/
-                        K[m] += mid[j] * eps[cf][j + m];
+            int cc = Nmid * 8 / bits.size();
+            int cn = bits.size() / 8;
+            double cstep = 1.98 / double(cc);
+            int index = 0;
+            for (int i=0; i<cn; i++) {
+                int fi_vals[8];
+                for (int k=0; k<8; k++) {
+                    double res = 0;
+                    double x = -0.99;
+                    //double x = -1;
+                    for (int j=0; j<cc; j++) {
+                        res += cstep * fi(Lc[k], x) * mid[i*cc + j] * (1.0 / sqrt(1 - x*x));
+                        x = x + cstep;
                     }
-                }
-                //qDebug() << mid[y];
-                int ind_max = 0;
-                for (int m=0; m<16; m++) {
-                    if (K[m] > K[ind_max]) {
-                        ind_max = m;
+                    //qDebug() << res;
+                    if (res <= this->a) {
+                        data[i*8 + k]--;
                     }
-                }
-                //qDebug() << mid[0] * eps[b * bsize / Nb + i][0];
-                if (ind_max <= 7) {
-                    data[b * bsize / Nb + i]--;
-                }
-                else {
-                    data[b * bsize / Nb + i]++;
+                    else {
+                        data[i*8 + k]++;
+                    }
                 }
             }
-        }
-    }
+
+            }
+        //}
+    //}
 
     for (int i=0; i<length; i++) {
         //qDebug() << data[i];
@@ -558,8 +514,219 @@ void CAlgFridrich2::Restore(QImage& container, QByteArray& watermark, QByteArray
     delete [] eta;
 }
 
+void CAlgPolynom::Restore(QImage& container, QVector<double>& watermark, QByteArray& key)
+{
 
-void CAlgFridrich2::GenKey(QByteArray& data)
+    qDebug() << "polynom";
+    keyStruct keyData = *(keyStruct*)(key.constData());
+    qsrand(keyData.seed);
+    //qDebug() << keyData.seed;
+    int length = keyData.length;
+    //cout << keyData.length;
+    QBitArray bits;
+    bits.resize(length);
+    int bsize = bits.size();
+    //double gamma = 1;
+    int k = 0;
+    int l = 0;
+    int X = container.width();
+    int Y = container.height();
+    int Nbx = 2;
+    int Nby = 2;
+    int Nb = Nbx*Nby;
+    int Xb = X / Nbx;
+    int Yb = Y / Nby;
+    int Nmid = Xb*Yb*0.3; //4080;
+    //int L = 20;
+    double* A = new double [Xb*Yb];
+    double* B = new double [Xb*Yb];
+    QVector<double> data(length);
+    //double* data = new double[length];
+    for (int i=0; i<length; i++) {
+        data[i] = 0;
+    }
+    double cnorm;
+    double y, cb, cr;
+    double mean = 0;
+    double stddev = 0;
+    DCT Dct;
+    double* mid = new double [Nmid];
+    //double a = 0.3;
+    double a2 = (1 + a) / (1 - a);
+    double tau[3000];
+    qDebug() << "RESTORE******************";
+    tau[0] = 1;
+    int tau_max = 1;
+    for (int i=1; i<3000; i++) {
+        tau_max++;
+        tau[i] = a2 * tau[i-1];
+        if (tau[i] > 1000) {
+            break;
+        }
+        //qDebug() << tau[i];
+    }
+
+    int H = L;
+    int count = L + 1;
+    while (count < bits.size()) {
+        H++;
+        count += H + 1;
+    }
+
+    int Lm = Xb;
+    int Hm = Lm;
+    int j = 1;
+    int countm = Xb;
+    while (countm < Nmid) {
+        Hm++;
+        Lm--;
+        countm += 2*(Xb-j);
+        j++;
+    }
+
+    double K[16];
+    double** eps = new double* [bsize];
+    double* eta = new double[bsize];
+    int* start = new int[bsize];
+    for (int i=0; i<bsize; i++) {
+        eps[i] = new double [Nmid + 16];
+        for (int j=0; j<Nmid+16; j++) {
+            eps[i][j] = qrand() / (double)RAND_MAX;
+        }
+        rand();
+    }
+    //qDebug() << eps[100][100];
+    for (int b=0; b<Nb; b++) {
+        int by = Yb * (b / Nbx);
+        int bx = Xb * (b % Nbx);
+
+        for (int i=0; i<Xb; i++) {
+            for (int j=0; j<Yb; j++) {
+                double v;
+                int cb, cr;
+                switch(ch) {
+                case channels::BLUE:
+                    v = BLUE(container.pixel(bx+i, by+j));
+                    break;
+                case channels::RED:
+                    v = RED(container.pixel(bx+i, by+j));
+                    break;
+                case channels::GREEN:
+                    v = GREEN(container.pixel(bx+i, by+j));
+                    break;
+                case channels::Y:
+                    RGBtoYCbCr(container.pixel(bx+i, by+j), v, cr, cb);
+                    break;
+                }
+                mean += v;
+                stddev += v*v;
+            }
+        }
+        mean /= (Xb*Yb);
+        stddev /= (Xb*Yb);
+        stddev -= mean*mean;
+        stddev = sqrt(stddev);
+        cnorm = 1024 / (Xb*stddev);
+        for (int i=0; i<Xb; i++) {
+            for (int j=0; j<Yb; j++) {
+                int cr, cb;
+                switch(ch) {
+                case channels::BLUE:
+                    A[i*Yb + j] = (BLUE(container.pixel(bx+i, by+j)) - mean) * cnorm;
+                    break;
+                case channels::RED:
+                    A[i*Yb + j] = (RED(container.pixel(bx+i, by+j)) - mean) * cnorm;
+                    break;
+                case channels::GREEN:
+                    A[i*Yb + j] = (GREEN(container.pixel(bx+i, by+j)) - mean) * cnorm;
+                    break;
+                case channels::Y:
+                    RGBtoYCbCr(container.pixel(bx+i, by+j), A[i*Yb + j], cr, cb);
+                    A[i*Yb + j] = (A[i*Yb + j] - mean) * cnorm;
+                    break;
+                }
+            }
+        }
+        Dct.fdct2(A, B, Xb, Yb);
+        count = 0;
+        countm = 0;
+
+        qDebug() << "mode " << mode;
+
+        //if (mode & 2) {
+            for (int i1=0; i1<Xb; i1++) {
+                for (int i2=0; i2<Yb; i2++) {
+                    if (Lm <= i1 + i2 + 1 && i1 + i2 + 1 <= Hm) {
+                        mid[countm] = B[i1 * Yb + i2];
+
+                        countm++;
+                        if (countm >= Nmid) break;
+                    }
+                }
+                if (countm >= Nmid) break;
+            }
+            int cc = Nmid * 8 / bits.size();
+            int cn = bits.size() / 8;
+            double cstep = 1.98 / double(cc);
+            int index = 0;
+            double* res = new double[bits.size()];
+            double res_min = 100, res_max = -100;
+            for (int i=0; i<cn; i++) {
+                int fi_vals[8];
+                for (int k=0; k<8; k++) {
+                    res[i * 8 + k] = 0;
+                    double x = -0.99;
+                    //double x = -1;
+                    for (int j=0; j<cc; j++) {
+                        res[i * 8 + k] += cstep * fi(Lc[k], x) * mid[i*cc + j] * (1.0 / sqrt(1 - x*x));
+                        x = x + cstep;
+                    }
+                    if (res_min > res[i * 8 + k]) {
+                        res_min = res[i * 8 + k];
+                    }
+                    if (res_max < res[i * 8 + k]) {
+                        res_max = res[i * 8 + k];
+                    }
+                    //qDebug() << res;
+                }
+            }
+            double low_area = this->a - res_min;
+            double high_area = res_max - this->a;
+            for (int i=0; i<cn; i++) {
+                for (int k=0; k<8; k++) {
+                    if (res[i * 8 + k] <= this->a) {
+                        data[i*8 + k] += 0.1 * ((res[i * 8 + k] - res_min) / low_area);
+                    }
+                    else {
+                        data[i*8 + k] += 1 - 0.9 * ((res_max - res[i * 8 + k]) / high_area);
+                    }
+                }
+            }
+
+            delete [] res;
+
+            }
+        //}
+    //}
+
+    for (int i=0; i<length; i++) {
+        data[i] /= Nb;
+    }
+    watermark = data;
+
+    delete [] A;
+    delete [] B;
+    //delete [] data;
+    delete [] mid;
+    for (int i=0; i<bsize; i++) {
+        delete [] eps[i];
+    }
+    delete [] eps;
+    delete [] eta;
+}
+
+
+void CAlgPolynom::GenKey(QByteArray& data)
 {
     keyStruct keyData;
     keyData.seed = QTime::currentTime().msec();
@@ -568,7 +735,7 @@ void CAlgFridrich2::GenKey(QByteArray& data)
     key = QByteArray((char*)&keyData, sizeof(keyStruct));
 }
 
-void CAlgFridrich2::SetParams(QString& params)
+void CAlgPolynom::SetParams(QString& params)
 {
     CParamHelper ph;
     ph.AddToMap(&a, ph.DOUBLE, "alpha");
@@ -579,3 +746,4 @@ void CAlgFridrich2::SetParams(QString& params)
     ph.AddToMap((void*)&ch, ph.CHANNEL, "channel");
     ph.SetParams(params);
 }
+

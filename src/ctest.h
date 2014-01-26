@@ -13,6 +13,7 @@ public:
     };
     virtual void Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArray& result, const QString& container_name, const QString& watermark_name);
     void Visual(CAlgorithm* alg, QString& params, QString& alg_params, const QString& container_name, const QString* watermark_name, int wm_size);
+    void Picture(CAlgorithm* alg, QString& params, QString& alg_params, const QString& container_name, const QString* watermark_name);
     virtual void Attack(QImage& img, QString& params);
     void addNoise(QImage& in, QImage& out, int level);
     void addINoise(QImage& in, QImage& out, int level);

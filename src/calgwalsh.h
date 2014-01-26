@@ -1,13 +1,14 @@
-#ifndef CALGFRIDRICH2_H
-#define CALGFRIDRICH2_H
+#ifndef CALGWALSH_H
+#define CALGWALSH_H
 #include "calgorithm.h"
 
-class CAlgFridrich2 : public CAlgorithm
+class CAlgWalsh : public CAlgorithm
 {
 public:
-    CAlgFridrich2();
+    CAlgWalsh();
     virtual void Hide(QImage& container, QByteArray& watermark, QByteArray& key);
     virtual void Restore(QImage& container, QByteArray& watermark, QByteArray& key);
+    virtual void Restore(QImage& container, QVector<double> &watermark, QByteArray& key);
     virtual void GenKey(QByteArray& data);
     virtual void SetParams(QString& params);
     struct keyStruct {
@@ -15,8 +16,11 @@ public:
         int seed;
     };
     double a, gamma;
+    static int Lc[8];
+    static int walshMatrix[16][16];
+    double fi(int i, double x);
     int mode, ch, spectrum;
     int L;
 };
 
-#endif // CALGFRIDRICH2_H
+#endif // CALGWALSH_H

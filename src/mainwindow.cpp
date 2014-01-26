@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+ï»¿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QImage>
 #include <QFile>
@@ -12,6 +12,10 @@
 #include "calgbengam.h"
 #include "calgfridrich.h"
 #include "calgfridrich2.h"
+#include "calgconvolution.h"
+#include "calgwalsh.h"
+#include "calgpolynom.h"
+#include "calglegendre.h"
 #include "ctestjpeg.h"
 #include "ctesttransform.h"
 #include "ctestmedian.h"
@@ -160,10 +164,18 @@ void Thread::parse(QString& data, int depth)
             alg = new CAlgFridrich;
         } else if (alg_name == "fridrich2") {
             alg = new CAlgFridrich2;
+        } else if (alg_name == "convolution") {
+            alg = new CAlgConvolution;
+        } else if (alg_name == "polynom") {
+            alg = new CAlgPolynom;
+        } else if (alg_name == "legendre") {
+            alg = new CAlgLegendre;
         } else if (alg_name == "langelaar") {
             alg = new CAlgLangelaar;
         } else if (alg_name == "kutter") {
             alg = new CAlgKutter;
+        } else if (alg_name == "walsh") {
+            alg = new CAlgWalsh;
         } else if (alg_name == "combine") {
             alg = new CAlgCombine;
         }
@@ -223,6 +235,10 @@ void Thread::parse(QString& data, int depth)
         else if (test_name == "view") {
             test = new CTest;
             test->Visual(alg, test_params, alg_params, container_name, 0, 512*512/(64*8));
+        }
+        else if (test_name == "picture") {
+            test = new CTest;
+            test->Picture(alg, test_params, alg_params, container_name, 0);
         }
         else {
             QByteArray ba;
@@ -336,7 +352,7 @@ MainWindow::MainWindow(QWidget *parent) :
     vector<double> arr;
     arr.resize(100000);
 
-    container = "test\\Lenna.bmp";
+    container = "data\\pic\\Lenna.bmp";
     double m = 0, d = 0;
     for (int i=0; i<100000; i++) {
         arr[i] = rng.Normal(0, 10);
@@ -728,7 +744,7 @@ void MainWindow::distortions()
 void MainWindow::doTransform()
 {
     if (!transform_image_loaded) {
-        QMessageBox::warning(0, "Ïðåäóïðåæäåíèå", "Ñíà÷àëà çàãðóçèòå òåñòîâîå èçîáðàæåíèå!");
+        QMessageBox::warning(0, "ÐŸÑ€ÐµÐ´ÑƒÐ¿Ñ€ÐµÐ¶Ð´ÐµÐ½Ð¸Ðµ", "Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° Ð·Ð°Ð³Ñ€ÑƒÐ·Ð¸Ñ‚Ðµ Ñ‚ÐµÑÑ‚Ð¾Ð²Ð¾Ðµ Ð¸Ð·Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ðµ!");
         return;
     }
     QString tmp = ui->transformScript->toPlainText();
@@ -1064,7 +1080,7 @@ void MainWindow::parse(QString& data, int depth)
 void MainWindow::perform_tests()
 {
     if (!test_image_loaded) {
-        QMessageBox::warning(0, "Ïðåäóïðåæäåíèå", "Ñíà÷àëà çàãðóçèòå òåñòîâîå èçîáðàæåíèå!");
+        QMessageBox::warning(0, "ÐŸÑ€ÐµÐ´ÑƒÐ¿Ñ€ÐµÐ¶Ð´ÐµÐ½Ð¸Ðµ", "Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° Ð·Ð°Ð³Ñ€ÑƒÐ·Ð¸Ñ‚Ðµ Ñ‚ÐµÑÑ‚Ð¾Ð²Ð¾Ðµ Ð¸Ð·Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ðµ!");
         return;
     }
     //ui->input->clear();

@@ -98,6 +98,9 @@ void CParamHelper::Process(void* ptr, int type, QString value)
         else if (value == "BLUR") {
              *(int*)(ptr) = tAMFilter;
         }
+        else if (value == "GBLUR") {
+             *(int*)(ptr) = tGBlur;
+        }
         else if (value == "GEOMETRIC_BLUR") {
              *(int*)(ptr) = tGMFilter;
         }

@@ -45,7 +45,11 @@ SOURCES += \
     src/RNG/mersenne.cpp \
     src/RNG/fnchyppr.cpp \
     src/RNG/erfres.cpp \
-    src/ECC/rsccode.cpp
+    src/ECC/rsccode.cpp \
+    src/calgconvolution.cpp \
+    src/calgpolynom.cpp \
+    src/calglegendre.cpp \
+    src/calgwalsh.cpp
 
 HEADERS  += \
     src/mainwindow.h \
@@ -77,7 +81,11 @@ HEADERS  += \
     src/FFT/fftw3.h \
     src/RNG/stocc.h \
     src/RNG/randomc.h \
-    src/ECC/rsccode.h
+    src/ECC/rsccode.h \
+    src/calgconvolution.h \
+    src/calgpolynom.h \
+    src/calglegendre.h \
+    src/calgwalsh.h
 
 INCLUDEPATH += $$PWD/../builds/stego
 

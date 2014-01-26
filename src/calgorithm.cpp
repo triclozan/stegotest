@@ -101,6 +101,11 @@ void CAlgorithm::Restore(QImage& container, QByteArray& watermark)
     Restore(container, watermark, key);
 }
 
+void CAlgorithm::Restore(QImage& container, QVector<double> &res)
+{
+    Restore(container, res, key);
+}
+
 void CAlgorithm::Restore(QImage& container, QByteArray& watermark, QString& p)
 {
     SetParams(p);
@@ -125,6 +130,11 @@ void CAlgorithm::SetParams(QString& p)
 void CAlgorithm::Restore(QImage& container, QByteArray& watermark, QByteArray& key)
 {
 
+}
+
+void CAlgorithm::Restore(QImage& container, QVector<double> &res, QByteArray& key)
+{
+    qDebug() << "What???";
 }
 
 double CAlgorithm::Detect(QImage& container, QByteArray& watermark, QByteArray& key)
