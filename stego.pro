@@ -98,7 +98,8 @@ RESOURCES += \
 
 OTHER_FILES += \
     TODO.txt \
-    Optimal_parameter.txt
+    Optimal_parameter.txt \
+    Description.txt
 
 win32: LIBS += -L$$PWD/lib/ -llibfftw3-3
 win32: LIBS += -L$$PWD/lib/ -llibwavelet2d
