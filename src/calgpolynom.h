@@ -1,6 +1,7 @@
 #ifndef CALGPOLYNOM_H
 #define CALGPOLYNOM_H
 #include "calgorithm.h"
+#include <QScopedArrayPointer>
 
 class CAlgPolynom : public CAlgorithm
 {
