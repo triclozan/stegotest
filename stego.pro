@@ -49,7 +49,8 @@ SOURCES += \
     src/calgconvolution.cpp \
     src/calgpolynom.cpp \
     src/calglegendre.cpp \
-    src/calgwalsh.cpp
+    src/calgwalsh.cpp \
+    src/calgmidcoeff.cpp
 
 HEADERS  += \
     src/mainwindow.h \
@@ -85,7 +86,8 @@ HEADERS  += \
     src/calgconvolution.h \
     src/calgpolynom.h \
     src/calglegendre.h \
-    src/calgwalsh.h
+    src/calgwalsh.h \
+    src/calgmidcoeff.h
 
 INCLUDEPATH += $$PWD/../builds/stego
 
