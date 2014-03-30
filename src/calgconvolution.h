@@ -1,25 +1,17 @@
 #ifndef CALGCONVOLUTION_H
 #define CALGCONVOLUTION_H
-#include "calgorithm.h"
+#include "calgmidcoeff.h"
 
-class CAlgConvolution : public CAlgorithm
+class CAlgConvolution : public CAlgMidCoeff
 {
 public:
     CAlgConvolution();
-    virtual void Hide(QImage& container, QByteArray& watermark, QByteArray& key);
-    virtual void Restore(QImage& container, QByteArray& watermark, QByteArray& key);
-    virtual void Restore(QImage& container, QVector<double> &watermark, QByteArray& key);
-    virtual void GenKey(QByteArray& data);
-    virtual void SetParams(QString& params);
-    struct keyStruct {
-        int length;
-        int seed;
-    };
-    double a, gamma;
+    virtual void GenerateWM(double *encData, int Nmid, QBitArray bits);
+    virtual void ExtractWM(double *data, double *mid, int Nmid, int size);
+    virtual void ExtractExtWM(double *data, double *mid, int Nmid, int size);
+
     static int Lc[8];
     double fi(int i, double x);
-    int mode, ch, spectrum;
-    int L;
 };
 
 #endif // CALGCONVOLUTION_H

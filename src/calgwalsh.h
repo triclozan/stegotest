@@ -1,26 +1,18 @@
 #ifndef CALGWALSH_H
 #define CALGWALSH_H
-#include "calgorithm.h"
+#include "calgmidcoeff.h"
 
-class CAlgWalsh : public CAlgorithm
+class CAlgWalsh : public CAlgMidCoeff
 {
 public:
     CAlgWalsh();
-    virtual void Hide(QImage& container, QByteArray& watermark, QByteArray& key);
-    virtual void Restore(QImage& container, QByteArray& watermark, QByteArray& key);
-    virtual void Restore(QImage& container, QVector<double> &watermark, QByteArray& key);
-    virtual void GenKey(QByteArray& data);
-    virtual void SetParams(QString& params);
-    struct keyStruct {
-        int length;
-        int seed;
-    };
-    double a, gamma;
+    virtual void GenerateWM(double *encData, int Nmid, QBitArray bits);
+    virtual void ExtractWM(double *data, double *mid, int Nmid, int size);
+    virtual void ExtractExtWM(double *data, double *mid, int Nmid, int size);
+
     static int Lc[8];
-    static int walshMatrix[16][16];
     double fi(int i, double x);
-    int mode, ch, spectrum;
-    int L;
+    static int walshMatrix[16][16];
 };
 
 #endif // CALGWALSH_H

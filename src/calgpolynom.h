@@ -1,7 +1,6 @@
 #ifndef CALGPOLYNOM_H
 #define CALGPOLYNOM_H
 #include "calgmidcoeff.h"
-#include <QScopedArrayPointer>
 
 class CAlgPolynom : public CAlgMidCoeff
 {
