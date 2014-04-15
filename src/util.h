@@ -23,6 +23,7 @@ namespace channels {
 }
 
 enum Transforms {tUNoise=1, tINoise=2, tBINoise=3, tGNoise=4, tFINoise=5, tAMFilter=10, tGMFilter=11, tHMFilter=12, tMedFilter=13, tAdMedFilter=14, tBLFilter=15, tAdLocalFilter=16, tMPFilter=17, tGBlur=18, tSharpen=20, tJpeg=30, tFFT=50, tWavelet=51, tWiener=52, tHisteq=60};
+enum IntMethods {mRectangles=1, mTrapezium=2, mSimpson=3};
 
 unsigned int YCbCrtoRGB(double y, int cr, int cb);
 void RGBtoYCbCr(unsigned int value, double& y, int& cr, int& cb);

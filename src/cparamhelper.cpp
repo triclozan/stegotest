@@ -37,7 +37,6 @@ void CParamHelper::SetParams(QString& params, QString param_sep)
     }
     for (int i=0; i<paramMap.size(); i++) {
         for (int j=0; j<names.size(); j++) {
-            //qDebug() << names[j];
             if (paramMap[i].name == names[j]) {
                 Process(paramMap[i].ptr, paramMap[i].type, values[j]);
             }

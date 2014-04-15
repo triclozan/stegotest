@@ -13,12 +13,43 @@ double CAlgPolynom::fi(int i, double x) {
     return cos(i*acos(x));
 }
 
+int CAlgPolynom::Functor::getStart() const
+{
+    return start;
+}
+
+void CAlgPolynom::Functor::setStart(int value)
+{
+    start = value;
+}
+
+int CAlgPolynom::Functor::getK() const
+{
+    return k;
+}
+
+void CAlgPolynom::Functor::setK(int value)
+{
+    k = value;
+}
+
+CAlgPolynom::Functor::Functor (int k, int start, double *mid)
+{
+    this->k = k;
+    this->start = start;
+    this->mid = mid;
+}
+
+double CAlgPolynom::Functor::operator() (int i, double x) {
+    return fi(Lc[k], x) * mid[start + i] * (1.0 / sqrt(1 - x*x));
+}
+
 void CAlgPolynom::GenerateWM(double* encData, int Nmid, QBitArray bits)
 {
     qDebug() << "gen";
     int cc = Nmid * 8 / bits.size();
     int cn = bits.size() / 8;
-    double cstep = 1.98 / double(cc);
+    double cstep = 1.99 / double(cc);
 
     for (int i = 0; i < cn; i++) {
         int k[8];
@@ -26,7 +57,7 @@ void CAlgPolynom::GenerateWM(double* encData, int Nmid, QBitArray bits)
             k[l] = bits[i*8 + l];
             bits[i*8 + l];
         }
-        double x = -0.99;
+        double x = -0.995;
 
         for (int j=0; j<cc; j++) {
             double res = 0;
@@ -44,17 +75,13 @@ void CAlgPolynom::ExtractWM(double *data, double *mid, int Nmid, int size)
     qDebug() << "extract";
     int cc = Nmid * 8 / size;
     int cn = size / 8;
-    double cstep = 1.98 / double(cc);
+    double cstep = 1.99 / double(cc);
+    Functor f(1, 1, mid);
     for (int i=0; i<cn; i++) {
+        f.setStart(i * cc);
         for (int k=0; k<8; k++) {
-            double res = 0;
-            double x = -0.99;
-            //double x = -1;
-            for (int j=0; j<cc; j++) {
-                res += cstep * fi(Lc[k], x) * mid[i*cc + j] * (1.0 / sqrt(1 - x*x));
-                x = x + cstep;
-            }
-            //qDebug() << res;
+            f.setK(k);
+            double res = CIntegrator::Integrate(-0.995, cstep, cc, f, intMethod);
             if (res <= this->a) {
                 data[i*8 + k]--;
             }
@@ -72,15 +99,12 @@ void CAlgPolynom::ExtractExtWM(double *data, double *mid, int Nmid, int size)
     double cstep = 1.98 / double(cc);
     QScopedArrayPointer<double> res(new double [size]); // input matrix
     double res_min = 100, res_max = -100;
-
+    Functor f(1, 1, mid);
     for (int i=0; i<cn; i++) {
+        f.setStart(i * cc);
         for (int k=0; k<8; k++) {
-            res[i * 8 + k] = 0;
-            double x = -0.99;
-            for (int j=0; j<cc; j++) {
-                res[i * 8 + k] += cstep * fi(Lc[k], x) * mid[i*cc + j] * (1.0 / sqrt(1 - x*x));
-                x = x + cstep;
-            }
+            f.setK(k);
+            res[i * 8 + k] = CIntegrator::Integrate(-0.99, cstep, cc, f, intMethod);
             if (res_min > res[i * 8 + k]) {
                 res_min = res[i * 8 + k];
             }

@@ -39,7 +39,7 @@ void CTest::Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArr
     int count = 0;
     int bcount = 0;
     tsize = size = block = parity = 0;
-    num = 2;
+    num = 10;
     CTest::SetParams(params);
     qDebug() << "SIZE!!!";
     qDebug() << tsize;

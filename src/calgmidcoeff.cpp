@@ -4,7 +4,7 @@
 #include <math.h>
 #include "util.h"
 
-CAlgMidCoeff::CAlgMidCoeff() {
+CAlgMidCoeff::CAlgMidCoeff() : intMethod("rectangle") {
     a = 0.35;
     gamma = 1;
     mode = 3;
@@ -500,9 +500,9 @@ void CAlgMidCoeff::SetParams(QString& params)
     CParamHelper ph;
     ph.AddToMap(&a, ph.DOUBLE, "alpha");
     ph.AddToMap(&gamma, ph.DOUBLE, "gamma");
+    ph.AddToMap(&intMethod, ph.STRING, "intmethod");
     ph.AddToMap(&mode, ph.INT, "mode");
     ph.AddToMap(&spectrum, ph.INT, "spectrum");
     ph.AddToMap((void*)&ch, ph.CHANNEL, "channel");
     ph.SetParams(params);
 }
-

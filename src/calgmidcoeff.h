@@ -16,11 +16,13 @@ public:
     virtual void GenerateWM(double *encData, int Nmid, QBitArray bits);
     virtual void ExtractWM(double *data, double *mid, int Nmid, int size);
     virtual void ExtractExtWM(double *data, double *mid, int Nmid, int size);
+
     struct keyStruct {
         int length;
         int seed;
     };
     double a, gamma;
     int mode, ch, spectrum;
+    QString intMethod;
 };
 #endif // CALGPOLYNOM_H
