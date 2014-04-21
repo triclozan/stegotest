@@ -1,11 +1,32 @@
 #include "cintegrator.h"
+#include <cmath>
 #include <QDebug>
 
 CIntegrator::CIntegrator()
 {
 }
 
+double CIntegrator::Functor::meshStep (int i)
+{
+
+}
+
+double CIntegrator::TestFunctor::operator ()(int i, double x) {
+    return sin(2 * M_PI * x);
+}
+
 double CIntegrator::Rectangle(double start, double step, int count, Functor& f)
+{
+    double x = start;
+    double sum = 0;
+    for (int i=0; i<count; i++) {
+        sum += f(i, x) * step;
+        x += step;
+    }
+    return sum;
+}
+
+double CIntegrator::Nonuniform(double start, double step, int count, Functor& f)
 {
     double x = start;
     double sum = 0;
@@ -24,7 +45,8 @@ double CIntegrator::Trapezium(double start, double step, int count, Functor& f)
         sum += (f(i + 1, x + step) + f(i, x)) / 2 * step;
         x += step;
     }
-    return sum;}
+    return sum;
+}
 
 double CIntegrator::Simpson(double start, double step, int count, Functor& f)
 {
@@ -50,4 +72,15 @@ double CIntegrator::Integrate(double start, double step, int count, Functor& f, 
     } else if (method.compare("simpson") == 0) {
         return Simpson(start, step, count, f);
     }
+}
+
+void CIntegrator::test() {
+    TestFunctor f;
+    double start = 0;
+    double end = 1;
+    int count = 300;
+    double step = (end - start) / count;
+    qDebug() << CIntegrator::Integrate(start, step, count, f, "rectangle");
+    qDebug() << CIntegrator::Integrate(start, step, count, f, "trapezium");
+    qDebug() << CIntegrator::Integrate(start, step, count, f, "simpson");
 }

@@ -13,6 +13,7 @@
 #include "calgfridrich.h"
 #include "calgfridrich2.h"
 #include "calgconvolution.h"
+#include "cintegrator.h"
 #include "calgwalsh.h"
 #include "calgpolynom.h"
 #include "calglegendre.h"
@@ -292,6 +293,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     thread(0)
 {
+    CIntegrator::test();
     ui->setupUi(this);
     lab = 0;
     alg = new CAlgLSB;
