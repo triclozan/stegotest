@@ -13,18 +13,17 @@ public:
 
     static int Lc[8];
     static double fi(int i, double x);
-    class Functor : public CIntegrator::Functor {
-    private:
-        int k, start;
-        double *mid;
+    class Functor : public CAlgMidCoeff::Functor {
+        int numPoints;
+        double length;
     public:
         Functor (int k, int start, double* mid);
         virtual double operator() (int i, double x);
-
-        int getStart() const;
-        void setStart(int value);
-        int getK() const;
-        void setK(int value);
+        virtual double meshStep (int i, double base);
+        int getNumPoints() const;
+        void setNumPoints(int value);
+        double getLength() const;
+        void setLength(double value);
     };
 };
 #endif // CALGPOLYNOM_H

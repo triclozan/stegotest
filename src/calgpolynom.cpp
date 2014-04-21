@@ -13,35 +13,44 @@ double CAlgPolynom::fi(int i, double x) {
     return cos(i*acos(x));
 }
 
-int CAlgPolynom::Functor::getStart() const
+
+int Functor::getNumPoints() const
 {
-    return start;
+    return numPoints;
 }
 
-void CAlgPolynom::Functor::setStart(int value)
+void Functor::setNumPoints(int value)
 {
-    start = value;
+    numPoints = value;
 }
 
-int CAlgPolynom::Functor::getK() const
+double Functor::getLength() const
 {
-    return k;
+    return length;
 }
 
-void CAlgPolynom::Functor::setK(int value)
+void Functor::setLength(double value)
 {
-    k = value;
+    length = value;
 }
-
-CAlgPolynom::Functor::Functor (int k, int start, double *mid)
+CAlgPolynom::Functor::Functor (int k, int start, double *mid):
+    CAlgMidCoeff::Functor::Functor(k, start, mid)
 {
-    this->k = k;
-    this->start = start;
-    this->mid = mid;
+
 }
 
 double CAlgPolynom::Functor::operator() (int i, double x) {
     return fi(Lc[k], x) * mid[start + i] * (1.0 / sqrt(1 - x*x));
+}
+
+double CAlgPolynom::Functor::meshStep (int i, double base)
+{
+    C = length / 2 / sqrt(numPoints >> 2);
+    if (i <= (numPoints >> 2)) {
+        return C * sqrt(i) - base;
+    } else {
+        return (start + length) / 2 - C * sqrt(numPoints - i) - base;
+    }
 }
 
 void CAlgPolynom::GenerateWM(double* encData, int Nmid, QBitArray bits)
@@ -126,3 +135,6 @@ void CAlgPolynom::ExtractExtWM(double *data, double *mid, int Nmid, int size)
         }
     }
 }
+
+//C = ab / 2 / sqrt(cc / 2)
+// step = C * sqrt(i)
