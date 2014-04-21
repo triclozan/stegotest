@@ -27,6 +27,33 @@ void CAlgMidCoeff::ExtractExtWM(double *data, double *mid, int Nmid, int size)
 
 }
 
+int CAlgMidCoeff::Functor::getStart() const
+{
+    return start;
+}
+
+void CAlgMidCoeff::Functor::setStart(int value)
+{
+    start = value;
+}
+
+int CAlgMidCoeff::Functor::getK() const
+{
+    return k;
+}
+
+void CAlgMidCoeff::Functor::setK(int value)
+{
+    k = value;
+}
+
+CAlgMidCoeff::Functor::Functor (int k, int start, double *mid)
+{
+    this->k = k;
+    this->start = start;
+    this->mid = mid;
+}
+
 void CAlgMidCoeff::Hide(QImage& container, QByteArray& watermark, QByteArray& key)
 {
     keyStruct keyData = *(keyStruct*)(key.constData()); // preparing the key

@@ -1,6 +1,7 @@
 #ifndef CALGMIDCOEFF_H
 #define CALGMIDCOEFF_H
 #include "calgorithm.h"
+#include "cintegrator.h"
 #include <QScopedArrayPointer>
 #include <QSharedPointer>
 
@@ -16,6 +17,20 @@ public:
     virtual void GenerateWM(double *encData, int Nmid, QBitArray bits);
     virtual void ExtractWM(double *data, double *mid, int Nmid, int size);
     virtual void ExtractExtWM(double *data, double *mid, int Nmid, int size);
+
+    class Functor : public CIntegrator::Functor {
+    protected:
+        int k, start;
+        double *mid;
+    public:
+        Functor (int k, int start, double* mid);
+        virtual double operator() (int i, double x) = 0;
+
+        int getStart() const;
+        void setStart(int value);
+        int getK() const;
+        void setK(int value);
+    };
 
     struct keyStruct {
         int length;
