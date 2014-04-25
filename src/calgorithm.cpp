@@ -117,6 +117,11 @@ QByteArray CAlgorithm::ExportKey()
     return key;
 }
 
+void CAlgorithm::ImportKey(QByteArray key)
+{
+    this->key = key;
+}
+
 void CAlgorithm::SetParams(QByteArray& p)
 {
     params = p;

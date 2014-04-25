@@ -32,6 +32,7 @@ public:
     virtual bool DetectStrict(QImage& container, QByteArray& watermark, QByteArray& key, int thresh=0.7);
 
     QByteArray ExportKey();
+    void ImportKey(QByteArray key);
     virtual void GenKey(QByteArray& data);
     void GenKey(const QString& watermark_name);   
    
