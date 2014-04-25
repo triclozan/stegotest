@@ -10,7 +10,7 @@ public:
     class Functor {
     public:
         virtual double operator() (int i, double x) = 0;
-        virtual double meshStep (int i);
+        virtual double meshStep (int i, double base);
     };
     class TestFunctor : public Functor {
     public:

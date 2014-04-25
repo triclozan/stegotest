@@ -14,22 +14,22 @@ double CAlgPolynom::fi(int i, double x) {
 }
 
 
-int Functor::getNumPoints() const
+int CAlgPolynom::Functor::getNumPoints() const
 {
     return numPoints;
 }
 
-void Functor::setNumPoints(int value)
+void CAlgPolynom::Functor::setNumPoints(int value)
 {
     numPoints = value;
 }
 
-double Functor::getLength() const
+double CAlgPolynom::Functor::getLength() const
 {
     return length;
 }
 
-void Functor::setLength(double value)
+void CAlgPolynom::Functor::setLength(double value)
 {
     length = value;
 }
@@ -45,7 +45,7 @@ double CAlgPolynom::Functor::operator() (int i, double x) {
 
 double CAlgPolynom::Functor::meshStep (int i, double base)
 {
-    C = length / 2 / sqrt(numPoints >> 2);
+    double C = length / 2 / sqrt(numPoints >> 2);
     if (i <= (numPoints >> 2)) {
         return C * sqrt(i) - base;
     } else {
@@ -57,7 +57,7 @@ void CAlgPolynom::GenerateWM(double* encData, int Nmid, QBitArray bits)
 {
     qDebug() << "gen";
     int cc = Nmid * 8 / bits.size();
-    int cn = bits.size() / 8;
+    int cn = bits.size() / 8;       
     double cstep = 1.99 / double(cc);
 
     for (int i = 0; i < cn; i++) {

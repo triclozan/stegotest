@@ -6,9 +6,9 @@ CIntegrator::CIntegrator()
 {
 }
 
-double CIntegrator::Functor::meshStep (int i)
+double CIntegrator::Functor::meshStep (int i, double base)
 {
-
+    return base;
 }
 
 double CIntegrator::TestFunctor::operator ()(int i, double x) {
@@ -26,7 +26,7 @@ double CIntegrator::Rectangle(double start, double step, int count, Functor& f)
     return sum;
 }
 
-double CIntegrator::Nonuniform(double start, double step, int count, Functor& f)
+/*double CIntegrator::Nonuniform(double start, double step, int count, Functor& f)
 {
     double x = start;
     double sum = 0;
@@ -35,7 +35,7 @@ double CIntegrator::Nonuniform(double start, double step, int count, Functor& f)
         x += step;
     }
     return sum;
-}
+}*/
 
 double CIntegrator::Trapezium(double start, double step, int count, Functor& f)
 {
