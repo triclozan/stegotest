@@ -76,6 +76,7 @@ void CAlgConvolution::ExtractExtWM(double *data, double *mid, int Nmid, int size
     for (int i=0; i<cn; i++) {
         f.setStart(i * cc);
         for (int k=0; k<8; k++) {
+            f.setK(k);
             res[i * 8 + k] = CIntegrator::Integrate(0, cstep, cc, f, intMethod);
             if (res_min > res[i * 8 + k]) {
                 res_min = res[i * 8 + k];

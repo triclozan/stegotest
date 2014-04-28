@@ -13,6 +13,7 @@ public:
 
     static int Lc[8];
     static double fi(int i, double x);
+    double bound;
     class Functor : public CAlgMidCoeff::Functor {
         int numPoints;
         double length;

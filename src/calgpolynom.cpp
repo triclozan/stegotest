@@ -5,7 +5,7 @@
 #include "util.h"
 
 CAlgPolynom::CAlgPolynom() : CAlgMidCoeff() {
-
+    bound = -0.99;
 }
 
 int CAlgPolynom::Lc[8] = {1,2,3,4,5,6,7,8};
@@ -58,7 +58,7 @@ void CAlgPolynom::GenerateWM(double* encData, int Nmid, QBitArray bits)
     qDebug() << "gen";
     int cc = Nmid * 8 / bits.size();
     int cn = bits.size() / 8;       
-    double cstep = 1.99 / double(cc);
+    double cstep = -2 * bound / double(cc);
 
     for (int i = 0; i < cn; i++) {
         int k[8];
@@ -66,7 +66,7 @@ void CAlgPolynom::GenerateWM(double* encData, int Nmid, QBitArray bits)
             k[l] = bits[i*8 + l];
             bits[i*8 + l];
         }
-        double x = -0.995;
+        double x = bound;
 
         for (int j=0; j<cc; j++) {
             double res = 0;
@@ -84,13 +84,13 @@ void CAlgPolynom::ExtractWM(double *data, double *mid, int Nmid, int size)
     qDebug() << "extract";
     int cc = Nmid * 8 / size;
     int cn = size / 8;
-    double cstep = 1.99 / double(cc);
+    double cstep = -2 * bound / double(cc);
     Functor f(1, 1, mid);
     for (int i=0; i<cn; i++) {
         f.setStart(i * cc);
         for (int k=0; k<8; k++) {
             f.setK(k);
-            double res = CIntegrator::Integrate(-0.995, cstep, cc, f, intMethod);
+            double res = CIntegrator::Integrate(bound, cstep, cc, f, intMethod);
             if (res <= this->a) {
                 data[i*8 + k]--;
             }
@@ -105,7 +105,7 @@ void CAlgPolynom::ExtractExtWM(double *data, double *mid, int Nmid, int size)
 {
     int cc = Nmid * 8 / size;
     int cn = size / 8;
-    double cstep = 1.98 / double(cc);
+    double cstep = -2 * bound / double(cc);
     QScopedArrayPointer<double> res(new double [size]); // input matrix
     double res_min = 100, res_max = -100;
     Functor f(1, 1, mid);
@@ -113,7 +113,7 @@ void CAlgPolynom::ExtractExtWM(double *data, double *mid, int Nmid, int size)
         f.setStart(i * cc);
         for (int k=0; k<8; k++) {
             f.setK(k);
-            res[i * 8 + k] = CIntegrator::Integrate(-0.99, cstep, cc, f, intMethod);
+            res[i * 8 + k] = CIntegrator::Integrate(bound, cstep, cc, f, intMethod);
             if (res_min > res[i * 8 + k]) {
                 res_min = res[i * 8 + k];
             }
