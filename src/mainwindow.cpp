@@ -241,6 +241,15 @@ void Thread::parse(QString& data, int depth)
             test = new CTest;
             test->Picture(alg, test_params, alg_params, container_name, 0);
         }
+        else if (test_name == "save") {
+            test = new CTest;
+            test->Save(alg, test_params, alg_params, container_name);
+        }
+        else if (test_name == "check") {
+            test = new CTest;
+            double res = test->Check(alg, test_params, alg_params, container_name);
+            emit aSignal(QString::number(res));
+        }
         else {
             QByteArray ba;
             test->Test(alg, test_params, alg_params, ba, container_name, "..\\stego\\test\\in.txt");

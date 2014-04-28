@@ -27,6 +27,10 @@ public:
     void AdMedFilter(QImage& in, QImage& out, int N = 1);
     void SetParams(QString params);
     void Sharpen(QImage& in, QImage& out, double strength = 0.1);
+    void Save(CAlgorithm* alg, QString& params, QString& alg_params, const QString& container_name);
+    double Check(CAlgorithm* alg, QString& params, QString& alg_params, const QString& container_name);
+    QByteArray LoadPictureWm(QString& name, int &width, int &height);
+    void SavePictureWm(QString& name, int width, int height, QVector<double>& data);
     virtual ~CTest();
 private:
     QString params;

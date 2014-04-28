@@ -269,6 +269,180 @@ void CTest::Visual(CAlgorithm* alg, QString& params, QString& alg_params, const 
     in.save(res_name);
 }
 
+QByteArray CTest::LoadPictureWm(QString& name, int& width, int& height)
+{
+    QImage wm;
+    wm.load(name);
+    width = wm.width();
+    height = wm.height();
+    QBitArray bits(wm.width() * wm.height());
+    for (int i=0; i<wm.width(); i++) {
+        for (int j=0; j<wm.height(); j++) {
+            unsigned int p = BLUE(wm.pixel(i, j));
+            if (!p) {
+                bits[i*wm.height() + j] = 0;
+            }
+            else {
+                bits[i*wm.height() + j] = 1;
+            }
+        }
+    }
+    return CAlgorithm::bitToByte(bits);
+}
+
+void CTest::SavePictureWm(QString& name, int width, int height, QVector<double>& data)
+{
+    QImage wm(width, height, QImage::Format_RGB32);
+    for (int i=0; i<wm.width(); i++) {
+        for (int j=0; j<wm.height(); j++) {
+            int k = PIXELRANGE(data[i*wm.height() + j] * 255);
+            qDebug() << data[i*wm.height() + j];
+            wm.setPixel(i, j, PIXEL(k, k, k));
+        }
+    }
+    wm.save(name);
+}
+
+void CTest::Save(CAlgorithm* alg, QString& params, QString& alg_params, const QString& container_name)
+{
+    CParamHelper ph;
+    QString res_name, info, wm_name;
+    int type, width, height;
+    ph.AddToMap(&res_name, ph.STRING, "name");
+    ph.AddToMap(&info, ph.STRING, "info");
+    ph.AddToMap(&size, ph.INT, "size");
+    ph.AddToMap(&tsize, ph.INT, "tsize");
+    ph.AddToMap(&wm_name, ph.STRING, "wm_name");
+    ph.SetParams(params);
+    QImage in;
+    in.load(container_name);
+    QImage orig(in);
+    QByteArray bytes;
+    if (wm_name == "") {
+        srand(QTime::currentTime().msec());
+        bytes.resize(tsize);
+        int rep = tsize / size;
+        for (int i=0; i<size; i++) {
+            bytes[i] = rand() % 256;
+            for (int j=1; j<rep; j++) {
+                bytes[i+size*j] = bytes[i];
+            }
+        }
+        type = 1;
+    }
+    else {
+        qDebug() << "piiiiiiiiiicture";
+        bytes = LoadPictureWm(wm_name, width, height);
+        size = bytes.length();
+        tsize = size;
+        type = 2;
+    }
+
+    alg->SetParams(alg_params);
+    alg->GenKey(bytes);
+    alg->Hide(in, bytes);
+    QByteArray key = alg->ExportKey();
+    in.save(res_name);
+
+    QFile file(info);
+    file.open(QIODevice::WriteOnly);
+    file.write((char*)&type, sizeof(int));
+
+    if (type == 1) {
+        int keylen = key.length();
+        file.write((char*)&keylen, sizeof(int));
+        file.write(key);
+        file.write((char*)&tsize, sizeof(int));
+        file.write(bytes);
+        file.write((char*)&size, sizeof(int));
+    } else if (type == 2) {
+        file.write((char*)&width, sizeof(int));
+        file.write((char*)&height, sizeof(int));
+        int keylen = key.length();
+        file.write((char*)&keylen, sizeof(int));
+        file.write(key);
+        file.write(bytes);
+    }
+    file.close();
+}
+
+double CTest::Check(CAlgorithm* alg, QString& params, QString& alg_params, const QString& container_name)
+{
+    CParamHelper ph;
+    QString res_name, info, wm_name;
+    int type, width, height;
+    ph.AddToMap(&res_name, ph.STRING, "name");
+    ph.AddToMap(&info, ph.STRING, "info");
+    ph.AddToMap(&wm_name, ph.STRING, "wm_name");
+    ph.SetParams(params);
+    QImage in;
+    in.load(res_name);
+    QImage orig(in);
+
+    QByteArray bytes, bytes_out;
+    QByteArray key;
+    QFile file(info);
+    file.open(QIODevice::ReadOnly);
+    int keylen;
+    file.read((char*)&type, sizeof(int));
+    if (wm_name == "") {
+        type = 1;
+    }
+    else {
+        type = 2;
+    }
+    if (type == 1) {
+        file.read((char*)&keylen, sizeof(int));
+        key = file.read(keylen);
+        file.read((char*)&tsize, sizeof(int));
+        bytes.resize(size);
+        bytes = file.read(tsize);
+        file.read((char*)&size, sizeof(int));
+    } else if (type == 2) {
+        file.read((char*)&width, sizeof(int));
+        file.read((char*)&height, sizeof(int));
+        int keylen;
+        file.read((char*)&keylen, sizeof(int));
+        key = file.read(keylen);
+        bytes = file.read(width * height);
+    }
+    file.close();
+    qDebug() << tsize;
+    qDebug() << size;
+
+    if (type == 1) {
+        alg->ImportKey(key);
+        alg->Restore(in, bytes_out);
+
+        QBitArray bits = alg->byteToBit(bytes);
+        QBitArray bits_out = alg->byteToBit(bytes_out);
+
+        int rep = tsize / size;
+
+        double good;
+        for (int i=0; i < size*8; i++) {
+            int v = 0;
+            for (int j=0; j<rep; j++) {
+                if (bits_out[size*8*j+i]) {
+                    v++;
+                }
+                else {
+                    v--;
+                }
+            }
+            if (v > 0 && bits[i] || v <= 0 && !bits[i]) {
+                good++;
+            }
+        }
+        return good / (size * 8);
+    } else if (type == 2) {
+        QVector<double> res(width * height);
+        alg->ImportKey(key);
+        alg->Restore(in, res);
+        SavePictureWm(wm_name, width, height, res);
+    }
+}
+
 void CTest::Picture(CAlgorithm* alg, QString& params, QString& alg_params, const QString& container_name, const QString* watermark_name)
 {
     CParamHelper ph;
