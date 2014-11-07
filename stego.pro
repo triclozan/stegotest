@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QMAKE_MAC_SDK = macosx10.9
 
 TARGET = stego
 TEMPLATE = app
@@ -105,6 +106,8 @@ OTHER_FILES += \
     Optimal_parameter.txt \
     Description.txt
 
+LIBS += /usr/local/lib/libfftw3.a
+LIBS += $$PWD/lib/libwavelet2s.a
 win32: LIBS += -L$$PWD/lib/ -llibfftw3-3
 win32: LIBS += -L$$PWD/lib/ -llibwavelet2d
 win32: PRE_TARGETDEPS += $$PWD/lib/libfftw3-3.lib

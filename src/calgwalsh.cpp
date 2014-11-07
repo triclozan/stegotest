@@ -32,6 +32,16 @@ double CAlgWalsh::fi(int i, double x) {
     return CAlgWalsh::walshMatrix[i][col];
 }
 
+CAlgWalsh::Functor::Functor (int k, int start, double *mid):
+    CAlgMidCoeff::Functor::Functor(k, start, mid)
+{
+
+}
+
+double CAlgWalsh::Functor::operator() (int i, double x) {
+    return fi(Lc[k], x) * mid[start + i];
+}
+
 void CAlgWalsh::GenerateWM(double* encData, int Nmid, QBitArray bits)
 {
     int cc = Nmid * 8 / bits.size();
@@ -58,12 +68,12 @@ void CAlgWalsh::ExtractWM(double *data, double *mid, int Nmid, int size)
     int cc = Nmid * 8 / size;
     int cn = size / 8;
     double cstep = 1 / double(cc);
+    Functor f(1, 1, mid);
     for (int i=0; i<cn; i++) {
+        f.setStart(i * cc);
         for (int k=0; k<8; k++) {
-            double res = 0;
-            for (int j=0; j<cc; j++) {
-                res += cstep * fi(Lc[k], cstep*j) * mid[i*cc + j];
-            }
+            f.setK(k);
+            double res = CIntegrator::Integrate(0, cstep, cc, f, intMethod);
             if (res <= this->a) {
                 data[i*8 + k]--;
             }
@@ -81,14 +91,12 @@ void CAlgWalsh::ExtractExtWM(double *data, double *mid, int Nmid, int size)
     double cstep = 1 / double(cc);
     QScopedArrayPointer<double> res(new double [size]); // input matrix
     double res_min = 100, res_max = -100;
-
+    Functor f(1, 1, mid);
     for (int i=0; i<cn; i++) {
+        f.setStart(i * cc);
         for (int k=0; k<8; k++) {
-            res[i * 8 + k] = 0;
-            double x = -0.99;
-            for (int j=0; j<cc; j++) {
-                res[i * 8 + k] += cstep * fi(Lc[k], cstep*j) * mid[i*cc + j];
-            }
+            f.setK(k);
+            res[i * 8 + k] = CIntegrator::Integrate(0, cstep, cc, f, intMethod);
             if (res_min > res[i * 8 + k]) {
                 res_min = res[i * 8 + k];
             }

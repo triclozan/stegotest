@@ -19,6 +19,7 @@ public:
     static double Rectangle(double start, double step, int count, Functor& f);
     static double Trapezium(double start, double step, int count, Functor& f);
     static double Simpson(double start, double step, int count, Functor& f);
+    static double Simpson2(double start, double step, int count, Functor& f);
     static double Integrate(double start, double step, int count, Functor& f, const QString &method);
 
     static void test();

@@ -10,7 +10,7 @@
 #include "cparamhelper.h"
 #include "FFT/fftw3.h"
 #include "dct.h"
-#include "FFT/wavelet2d.h"
+//#include "FFT/wavelet2d.h"
 CTransform::CTransform()
 {
 }
@@ -1294,7 +1294,8 @@ void CTransform::GaussBlur(QImage& in, QImage& out, double S, int stage)
 
 void CTransform::Wavelet(QImage& in, QImage& out, int level)
 {
-    if (!level) {
+    HMFilter(in, out, level);
+    /*if (!level) {
         out = in;
         return;
     }
@@ -1386,5 +1387,5 @@ void CTransform::Wavelet(QImage& in, QImage& out, int level)
         sz *= 2;
         dx = sz;
         dy = sz;
-    }
+    }*/
 }

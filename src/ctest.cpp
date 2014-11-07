@@ -70,7 +70,7 @@ void CTest::Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArr
             r.encode((unsigned char*)b.data(), size*8, (unsigned char*)b2.data());
             QBitArray tmpbits2(8*encoded_len);
             for (int i=0; i<b2.size(); i++) {
-                tmpbits2[i] = (b2[i] == 255);
+                tmpbits2[i] = (b2[i] == (char)255);
             }
             tmp_bytes = alg->bitToByte(tmpbits2);
             alg->SetParams(alg_params);
@@ -89,7 +89,7 @@ void CTest::Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArr
             int pos = 0;
             r.decode((unsigned char*)b2.data(), size*8, (unsigned char*)b.data());
             for (int i=0; i<b.size(); i++) {
-                tmpbits3[i] = (b[i] == 255);
+                tmpbits3[i] = (b[i] == (char) 255);
             }
             bytes_out = alg->bitToByte(tmpbits3);
 
@@ -97,7 +97,7 @@ void CTest::Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArr
                 if (bytes[i] == bytes_out[i]) {
                     bcount++;
                 }
-                if (bytes_out[i] == 255) {
+                if (bytes_out[i] == (char) 255) {
                     pos++;
                 }
             }
@@ -180,7 +180,7 @@ void CTest::Test(CAlgorithm* alg, QString& params, QString& alg_params, QByteArr
             if (bytes[i] == bytes_out[i]) {
                 bcount++;
             }
-            if (bytes_out[i] == 255) {
+            if (bytes_out[i] == (char) 255) {
                 pos++;
             }
         }
@@ -368,6 +368,7 @@ void CTest::Save(CAlgorithm* alg, QString& params, QString& alg_params, const QS
 
 double CTest::Check(CAlgorithm* alg, QString& params, QString& alg_params, const QString& container_name)
 {
+    qDebug() << alg_params;
     CParamHelper ph;
     QString res_name, info, wm_name;
     int type, width, height;
@@ -409,7 +410,7 @@ double CTest::Check(CAlgorithm* alg, QString& params, QString& alg_params, const
     file.close();
     qDebug() << tsize;
     qDebug() << size;
-
+    alg->SetParams(alg_params);
     if (type == 1) {
         alg->ImportKey(key);
         alg->Restore(in, bytes_out);

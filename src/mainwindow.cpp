@@ -252,7 +252,7 @@ void Thread::parse(QString& data, int depth)
         }
         else {
             QByteArray ba;
-            test->Test(alg, test_params, alg_params, ba, container_name, "..\\stego\\test\\in.txt");
+            test->Test(alg, test_params, alg_params, ba, container_name, "../stego/test/in.txt");
             CTest::sResults res = DESERIALIZE(ba,CTest::sResults);
             qDebug() << alg_params << " " << test_params << " " << res.BER;
             //out_stream << "<tr><td>" + columns.join("</td><td>") + "</td><td>" << res.BER << "</td></tr>";//alg_params << " " << test_params << " " << res.BER;
@@ -363,7 +363,7 @@ MainWindow::MainWindow(QWidget *parent) :
     vector<double> arr;
     arr.resize(100000);
 
-    container = "data\\pic\\Lenna.bmp";
+    container = "/Users/mac/Dropbox/Учеба/Aspirantura/Programs/stegotest/data/pic/Lenna.bmp";
     double m = 0, d = 0;
     for (int i=0; i<100000; i++) {
         arr[i] = rng.Normal(0, 10);

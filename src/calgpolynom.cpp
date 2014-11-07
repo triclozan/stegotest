@@ -45,8 +45,8 @@ double CAlgPolynom::Functor::operator() (int i, double x) {
 
 double CAlgPolynom::Functor::meshStep (int i, double base)
 {
-    double C = length / 2 / sqrt(numPoints >> 2);
-    if (i <= (numPoints >> 2)) {
+    double C = length / 2 / sqrt(numPoints >> 1);
+    if (i <= (numPoints >> 1)) {
         return C * sqrt(i) - base;
     } else {
         return (start + length) / 2 - C * sqrt(numPoints - i) - base;
@@ -58,7 +58,7 @@ void CAlgPolynom::GenerateWM(double* encData, int Nmid, QBitArray bits)
     qDebug() << "gen";
     int cc = Nmid * 8 / bits.size();
     int cn = bits.size() / 8;       
-    double cstep = -2 * bound / double(cc);
+    double cstep = -2 * bound / double(cc - 1);
 
     for (int i = 0; i < cn; i++) {
         int k[8];
@@ -84,7 +84,7 @@ void CAlgPolynom::ExtractWM(double *data, double *mid, int Nmid, int size)
     qDebug() << "extract";
     int cc = Nmid * 8 / size;
     int cn = size / 8;
-    double cstep = -2 * bound / double(cc);
+    double cstep = -2 * bound / double(cc - 1);
     Functor f(1, 1, mid);
     for (int i=0; i<cn; i++) {
         f.setStart(i * cc);
@@ -105,7 +105,7 @@ void CAlgPolynom::ExtractExtWM(double *data, double *mid, int Nmid, int size)
 {
     int cc = Nmid * 8 / size;
     int cn = size / 8;
-    double cstep = -2 * bound / double(cc);
+    double cstep = -2 * bound / double(cc - 1);
     QScopedArrayPointer<double> res(new double [size]); // input matrix
     double res_min = 100, res_max = -100;
     Functor f(1, 1, mid);
@@ -124,6 +124,8 @@ void CAlgPolynom::ExtractExtWM(double *data, double *mid, int Nmid, int size)
     }
     double low_area = this->a - res_min;
     double high_area = res_max - this->a;
+    qDebug() << "resmin " << res_min;
+    qDebug() << "resmax " << res_max;
     for (int i=0; i<cn; i++) {
         for (int k=0; k<8; k++) {
             if (res[i * 8 + k] <= this->a) {
