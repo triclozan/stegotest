@@ -4,3 +4,4 @@
 target
 target/*
 *.bak
+.DS_Store
