@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSettings>
 class QBitArray;
 #include <QThread>
 namespace Ui {
@@ -14,7 +15,6 @@ class QString;
 class CImageHistory;
 class QTextEdit;
 class QLabel;
-
 
 class Thread : public QThread
 {
@@ -108,6 +108,7 @@ private:
     QString container;
     bool test_image_loaded;
     bool transform_image_loaded;
+    QSettings settings;
 };
 
 

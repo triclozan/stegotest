@@ -59,8 +59,6 @@ protected:
 void Thread::parse(QString& data, int depth)
 {
     QStringList commands = data.split("\n");
-    //qDebug() << commands[1];
-    //QString container_name = "..\\stego\\test\\Lenna.bmp";
     for (int i=0; i<commands.size(); i++) {
 
         int j = 0;
@@ -300,8 +298,10 @@ Thread::Thread(QTextEdit* ptr, QString& str)
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    thread(0)
+    thread(0),
+    settings("./settings.ini", QSettings::IniFormat)
 {
+    qDebug() << settings.value("defaultContainer").toString();
     CIntegrator::test();
     ui->setupUi(this);
     lab = 0;
@@ -309,8 +309,6 @@ MainWindow::MainWindow(QWidget *parent) :
     test = new CTestJpeg;
     AlgId = TestId = 0;
     backup = new CImageHistory(10);
-    //ui->image_t_test->setPixmap(QPixmap::fromImage(QImage("F:\prj/stego/test/Lenna.bmp")));
-    //script_fname = "..\\stego\\custom.ini";
 
     QString str = "Save";
     QAction* save = new QAction(str, this);
@@ -363,7 +361,7 @@ MainWindow::MainWindow(QWidget *parent) :
     vector<double> arr;
     arr.resize(100000);
 
-    container = "/Users/mac/Dropbox/Учеба/Aspirantura/Programs/stegotest/data/pic/Lenna.bmp";
+    container = settings.value("defaultContainer").toString();
     double m = 0, d = 0;
     for (int i=0; i<100000; i++) {
         arr[i] = rng.Normal(0, 10);
@@ -516,7 +514,7 @@ void MainWindow::hideInfo()
     alg->SetParams(p);
     alg->GenKey("..\\stego\\test\\in.txt");
         //qDebug() << "Wah!";
-    alg->HideToFile("..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt", "..\\stego\\test\\2.bmp");
+    alg->HideToFile(settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt", "..\\stego\\test\\2.bmp");
 
     QPixmap pm = QPixmap("..\\stego\\test\\2.bmp").scaled(QSize(512, 512), Qt::KeepAspectRatio);
     QImage img = pm.toImage();
@@ -538,7 +536,7 @@ void MainWindow::hideInfo()
     ui->image_g->setPixmap(QPixmap::fromImage(img_g));
     ui->image_r->setPixmap(QPixmap::fromImage(img_r));
     ui->image_y->setPixmap(QPixmap::fromImage(img_y));
-    ui->image_orig->setPixmap(QPixmap("..\\stego\\test\\Lenna.bmp").scaled(QSize(512, 512), Qt::KeepAspectRatio));
+    ui->image_orig->setPixmap(QPixmap(settings.value("defaultContainer").toString()).scaled(QSize(512, 512), Qt::KeepAspectRatio));
     ui->image_res->setPixmap(pm);
 }
 
@@ -558,13 +556,13 @@ void MainWindow::doTest()
         /*int i = 100, j = 10;
         QByteArray p = QByteArray((char*)&i, sizeof(i));
         QByteArray p2 = QByteArray((char*)&j, sizeof(i));
-        test.Test(alg, p, p2, res, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
+        test.Test(alg, p, p2, res, settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt");
         qDebug() << j << " " << i << " " << res.toAscii().constData();*/
         for (int j = 30; j <= 30; j+=10) {
             for (int i = 100; i >= 5; i-=5) {
                     QByteArray p = QByteArray((char*)&i, sizeof(i));
                     QByteArray p2 = QByteArray((char*)&j, sizeof(i));
-                    //test->Test(alg, p, p2, res, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
+                    //test->Test(alg, p, p2, res, settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt");
                     //qDebug() << j << " " << i << " " << res.BER;
             }
         }
@@ -574,7 +572,7 @@ void MainWindow::doTest()
             for (int i = 1; i <= 100; i+=10) {
                     QByteArray p = QByteArray((char*)&i, sizeof(i));
                     QByteArray p2 = QByteArray((char*)&j, sizeof(i));
-                    //test->Test(alg, p, p2, res, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
+                    //test->Test(alg, p, p2, res, settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt");
                     //qDebug() << j << " " << i << " " << res.BER;
             }
         }
@@ -591,7 +589,7 @@ void MainWindow::doTest()
                 QByteArray p = tset.toUtf8();
                 //QByteArray p = QByteArray((char*)&i, sizeof(i));
                 QByteArray p2 = QByteArray((char*)&j, sizeof(i));
-                //test->Test(alg, p, p2, res, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
+                //test->Test(alg, p, p2, res, settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt");
                 //qDebug() << j << " " << i << " " << res.BER;
             }
         }
@@ -614,7 +612,7 @@ void MainWindow::custom()
 {
     QImage res = QImage(512, 512, QImage::Format_ARGB32);
     CTestKoh ctest;
-    pmask = ctest.Test("..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
+    pmask = ctest.Test(settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt");
 
     for (int y = 0; y < pmask.height(); ++y) {
       QRgb *row = (QRgb*)pmask.scanLine(y);
@@ -641,7 +639,7 @@ void MainWindow::custom()
     //pmask.fill(qRgba(0,0,0,0));
     QImage img;
     //i.fill(qRgba(0,0,0,0));
-    img = QImage("..\\stego\\test\\Lenna.bmp");
+    img = QImage(settings.value("defaultContainer").toString());
     for (int i=0; i<img.width(); i++) {
         for (int j=0; j<img.height(); j++) {
             img.setPixel(i, j, 255 - (img.pixel(i, j) & 0xFF));
@@ -749,7 +747,7 @@ void MainWindow::distortions()
     CTestDistortion t;
     QByteArray p = QByteArray((char*)&i, sizeof(i));
     QByteArray p2 = QByteArray((char*)&j, sizeof(j));
-    //t.Test(alg, p, p2, res, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
+    //t.Test(alg, p, p2, res, settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt");
 }
 
 void MainWindow::doTransform()
@@ -891,7 +889,7 @@ void MainWindow::custom_action()
                 QString p = tset;
          //     QByteArray p = QByteArray((char*)&i, sizeof(i));
                 QString p2 = "tresh=" + QString::number(tresh);
-                test->Test(alg, p, p2, result, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
+                test->Test(alg, p, p2, result, settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt");
                 res = DESERIALIZE(result,CTest::sResults);
                 qDebug() /*<< i << " "*/ << res.BER;
     }
@@ -903,7 +901,7 @@ void MainWindow::custom_action()
     QByteArray p = QByteArray();
     QByteArray p2 = QByteArray((char*)&tresh, sizeof(tresh));
     QString str;
-    //d.Test(alg, p, p2, str, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
+    //d.Test(alg, p, p2, str, settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt");
 }
 
 void MainWindow::log(QString data)
@@ -1049,7 +1047,7 @@ void MainWindow::parse(QString& data, int depth)
         QTextStream out_stream(&out);
         if (test_name == "distortion") {
             QByteArray ba;
-            dynamic_cast<CTestDistortion*>(test)->Test(alg, test_params, alg_params, ba, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
+            dynamic_cast<CTestDistortion*>(test)->Test(alg, test_params, alg_params, ba, settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt");
             CImgCompare::Result res = DESERIALIZE(ba,CImgCompare::Result);
             out_stream << "md: " << res.md << "\n";
             out_stream << "ad: " << res.ad << "\n";
@@ -1068,11 +1066,11 @@ void MainWindow::parse(QString& data, int depth)
         }
         else if (test_name == "view") {
             test = new CTest;
-            test->Visual(alg, test_params, alg_params, "..\\stego\\test\\Lenna.bmp", 0, 512*512/(64*8));
+            test->Visual(alg, test_params, alg_params, settings.value("defaultContainer").toString(), 0, 512*512/(64*8));
         }
         else {
             QByteArray ba;
-            test->Test(alg, test_params, alg_params, ba, "..\\stego\\test\\Lenna.bmp", "..\\stego\\test\\in.txt");
+            test->Test(alg, test_params, alg_params, ba, settings.value("defaultContainer").toString(), "..\\stego\\test\\in.txt");
             CTest::sResults res = DESERIALIZE(ba,CTest::sResults);
             qDebug() << alg_params << " " << test_params << " " << res.BER;
             out_stream << alg_params << " " << test_params << " " << res.BER;
