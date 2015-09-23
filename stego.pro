@@ -104,7 +104,8 @@ RESOURCES += \
 OTHER_FILES += \
     TODO.txt \
     Optimal_parameter.txt \
-    Description.txt
+    Description.txt\
+    data/*
 
 LIBS += /usr/local/lib/libfftw3.a
 LIBS += $$PWD/lib/libwavelet2s.a
