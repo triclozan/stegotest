@@ -54,8 +54,8 @@
                <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.Lucida Grande UI'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -161,7 +161,7 @@ p, li { white-space: pre-wrap; }
                  <string>Картинка</string>
                 </property>
                 <property name="checkable">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -185,8 +185,8 @@ p, li { white-space: pre-wrap; }
                  <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.Lucida Grande UI'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                </widget>
               </item>
@@ -282,7 +282,7 @@ p, li { white-space: pre-wrap; }
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1048</width>
+                 <width>1037</width>
                  <height>512</height>
                 </rect>
                </property>
@@ -480,8 +480,8 @@ p, li { white-space: pre-wrap; }
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>532</width>
-           <height>3120</height>
+           <width>549</width>
+           <height>3146</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="gridLayout">
@@ -817,8 +817,8 @@ border: 2px solid;</string>
    <slot>openFileDlg()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>34</x>
-     <y>64</y>
+     <x>50</x>
+     <y>76</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -833,8 +833,8 @@ border: 2px solid;</string>
    <slot>doTransform()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>591</x>
-     <y>620</y>
+     <x>585</x>
+     <y>610</y>
     </hint>
     <hint type="destinationlabel">
      <x>650</x>
@@ -849,8 +849,8 @@ border: 2px solid;</string>
    <slot>openSaveDlg()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1086</x>
-     <y>64</y>
+     <x>1074</x>
+     <y>76</y>
     </hint>
     <hint type="destinationlabel">
      <x>664</x>
@@ -865,8 +865,8 @@ border: 2px solid;</string>
    <slot>loadImage()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1005</x>
-     <y>64</y>
+     <x>960</x>
+     <y>76</y>
     </hint>
     <hint type="destinationlabel">
      <x>664</x>
@@ -1073,8 +1073,8 @@ border: 2px solid;</string>
    <slot>changeContainer()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1004</x>
-     <y>332</y>
+     <x>983</x>
+     <y>344</y>
     </hint>
     <hint type="destinationlabel">
      <x>1104</x>
