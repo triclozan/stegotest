@@ -674,7 +674,7 @@ void MainWindow::changeTest(int index) {
         //qDebug() << "AAA";
         delete test;
         //CTestTransform* ttest;
-        CTestTransform::sTransform t;
+        //CTestTransform::sTransform t;
         //CTestTransform::shParams sh;
         switch(index) {
         case 0:
