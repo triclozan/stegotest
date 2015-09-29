@@ -5,8 +5,7 @@
 class CTestNoise : public CTest
 {
 public:
-    virtual void Test(CAlgorithm* alg, QByteArray& params, QByteArray& alg_params, sResults& result, const QString& container_name, const QString& watermark_name);
-
+    virtual void Attack(QImage& img, QByteArray& params);
 };
 
 #endif // CTESTNOISE_H
