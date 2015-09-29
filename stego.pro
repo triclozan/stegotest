@@ -52,7 +52,8 @@ SOURCES += \
     src/calglegendre.cpp \
     src/calgwalsh.cpp \
     src/calgmidcoeff.cpp \
-    src/cintegrator.cpp
+    src/cintegrator.cpp \
+    src/Wavelib/wavelet2s.cpp
 
 HEADERS  += \
     src/mainwindow.h \
@@ -108,8 +109,9 @@ OTHER_FILES += \
     data/*
 
 LIBS += /usr/local/lib/libfftw3.a
-LIBS += $$PWD/lib/libwavelet2s.a
+#LIBS += $$PWD/lib/libwavelet2s.a
+LIBS += -lc++
 win32: LIBS += -L$$PWD/lib/ -llibfftw3-3
-win32: LIBS += -L$$PWD/lib/ -llibwavelet2d
+#win32: LIBS += -L$$PWD/lib/ -llibwavelet2d
 win32: PRE_TARGETDEPS += $$PWD/lib/libfftw3-3.lib
 win32: PRE_TARGETDEPS += $$PWD/lib/libwavelet2d.dll.a
